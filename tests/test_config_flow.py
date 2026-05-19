@@ -1,28 +1,45 @@
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from contextlib import contextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.integration_blueprint.const import DOMAIN
-from custom_components.integration_blueprint.exceptions import (
-    IntegrationBlueprintApiClientAuthenticationError,
-    IntegrationBlueprintApiClientCommunicationError,
-    IntegrationBlueprintApiClientError,
+from custom_components.neakasa_litterbox.const import DOMAIN
+from custom_components.neakasa_litterbox.exceptions import (
+    NeakasaApiClientAuthenticationError,
+    NeakasaApiClientCommunicationError,
+    NeakasaApiClientError,
 )
 
-USER_INPUT = {"username": "user", "password": "pass"}
-NEW_INPUT = {"username": "user", "password": "newpass"}
+USER_INPUT = {"username": "user@example.com", "password": "pass", "region": "US"}
+NEW_INPUT = {"username": "user@example.com", "password": "newpass", "region": "EU"}
 
 
-def _patch_client(side_effect=None, return_value=None):
-    if return_value is None:
-        return_value = {"title": "ok"}
-    return patch(
-        "custom_components.integration_blueprint.config_flow.IntegrationBlueprintApiClient"
-    )
+@contextmanager
+def _patch_both_clients():
+    """Patch both the config-flow and setup-entry NeakasaApiClient bindings."""
+    stream = MagicMock()
+    stream.start = AsyncMock()
+    stream.stop = AsyncMock()
+    with (
+        patch(
+            "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+        ) as flow_mock,
+        patch("custom_components.neakasa_litterbox.NeakasaApiClient") as setup_mock,
+    ):
+        for mock in (flow_mock, setup_mock):
+            inst = mock.return_value
+            inst.async_login = AsyncMock(return_value=None)
+            inst.async_close = AsyncMock(return_value=None)
+            inst.async_list_devices = AsyncMock(return_value=[])
+            inst.async_get_status = AsyncMock(return_value=None)
+            inst.async_list_cats = AsyncMock(return_value=[])
+            inst.async_get_toilet_records = AsyncMock(return_value=[])
+            inst.watch_status = MagicMock(return_value=stream)
+        yield flow_mock
 
 
 async def _start_user_flow(hass):
@@ -38,31 +55,28 @@ async def test_step_user_shows_form(hass, enable_custom_integrations):
 
 
 async def test_step_user_success_creates_entry(hass, enable_custom_integrations):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(return_value={"title": "ok"})
+    with _patch_both_clients():
         result = await _start_user_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=USER_INPUT
         )
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert result["title"] == "user"
+    assert result["title"] == "user@example.com"
     assert result["data"] == USER_INPUT
 
 
 async def test_step_user_success_sets_unique_id(hass, enable_custom_integrations):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(return_value={"title": "ok"})
+    with _patch_both_clients():
         flow = await _start_user_flow(hass)
         await hass.config_entries.flow.async_configure(
             flow["flow_id"], user_input=USER_INPUT
         )
     entry = hass.config_entries.async_entries(DOMAIN)[0]
-    assert entry.unique_id == "user"
+    assert entry.unique_id == "user_example_com"
 
 
 async def test_step_user_duplicate_aborts(hass, enable_custom_integrations):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(return_value={"title": "ok"})
+    with _patch_both_clients():
         flow1 = await _start_user_flow(hass)
         await hass.config_entries.flow.async_configure(
             flow1["flow_id"], user_input=USER_INPUT
@@ -76,10 +90,13 @@ async def test_step_user_duplicate_aborts(hass, enable_custom_integrations):
 
 
 async def test_step_user_auth_error_shows_auth(hass, enable_custom_integrations):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientAuthenticationError("bad")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientAuthenticationError("bad")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         flow = await _start_user_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             flow["flow_id"], user_input=USER_INPUT
@@ -91,10 +108,13 @@ async def test_step_user_auth_error_shows_auth(hass, enable_custom_integrations)
 async def test_step_user_communication_error_shows_connection(
     hass, enable_custom_integrations
 ):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientCommunicationError("down")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientCommunicationError("down")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         flow = await _start_user_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             flow["flow_id"], user_input=USER_INPUT
@@ -104,10 +124,13 @@ async def test_step_user_communication_error_shows_connection(
 
 
 async def test_step_user_generic_error_shows_unknown(hass, enable_custom_integrations):
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientError("oops")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientError("oops")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         flow = await _start_user_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             flow["flow_id"], user_input=USER_INPUT
@@ -116,11 +139,10 @@ async def test_step_user_generic_error_shows_unknown(hass, enable_custom_integra
     assert result["errors"]["base"] == "unknown"
 
 
-# --- Reauth ----------------------------------------------------------------
-
-
 def _existing_entry(hass) -> MockConfigEntry:
-    entry = MockConfigEntry(domain=DOMAIN, data=USER_INPUT, unique_id="user")
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=USER_INPUT, unique_id="user_example_com"
+    )
     entry.add_to_hass(hass)
     return entry
 
@@ -134,32 +156,33 @@ async def test_reauth_shows_confirm_form(hass, enable_custom_integrations):
 
 async def test_reauth_success_updates_entry(hass, enable_custom_integrations):
     entry = _existing_entry(hass)
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(return_value={"title": "ok"})
+    with _patch_both_clients():
         result = await entry.start_reauth_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=NEW_INPUT
         )
+        await hass.async_block_till_done()
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data["password"] == "newpass"
+    assert entry.data["region"] == "EU"
 
 
 async def test_reauth_auth_error_shows_auth(hass, enable_custom_integrations):
     entry = _existing_entry(hass)
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientAuthenticationError("nope")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientAuthenticationError("nope")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         result = await entry.start_reauth_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=NEW_INPUT
         )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "auth"
-
-
-# --- Reconfigure -----------------------------------------------------------
 
 
 async def test_reconfigure_shows_form(hass, enable_custom_integrations):
@@ -171,12 +194,12 @@ async def test_reconfigure_shows_form(hass, enable_custom_integrations):
 
 async def test_reconfigure_success_updates_entry(hass, enable_custom_integrations):
     entry = _existing_entry(hass)
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(return_value={"title": "ok"})
+    with _patch_both_clients():
         result = await entry.start_reconfigure_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=NEW_INPUT
         )
+        await hass.async_block_till_done()
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert entry.data["password"] == "newpass"
@@ -186,10 +209,13 @@ async def test_reconfigure_communication_error_shows_connection(
     hass, enable_custom_integrations
 ):
     entry = _existing_entry(hass)
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientCommunicationError("down")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientCommunicationError("down")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         result = await entry.start_reconfigure_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=NEW_INPUT
@@ -202,10 +228,13 @@ async def test_reconfigure_generic_error_shows_unknown(
     hass, enable_custom_integrations
 ):
     entry = _existing_entry(hass)
-    with _patch_client() as mock:
-        mock.return_value.async_get_data = AsyncMock(
-            side_effect=IntegrationBlueprintApiClientError("oops")
+    with patch(
+        "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
+    ) as mock:
+        mock.return_value.async_login = AsyncMock(
+            side_effect=NeakasaApiClientError("oops")
         )
+        mock.return_value.async_close = AsyncMock(return_value=None)
         result = await entry.start_reconfigure_flow(hass)
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input=NEW_INPUT

@@ -7,11 +7,11 @@
   "bump-patch-for-minor-pre-major": true,
   "packages": {
     ".": {
-      "package-name": "ha-integration-blueprint",
+      "package-name": "ha-neakasa-litterbox",
       "extra-files": [
         {
           "type": "json",
-          "path": "custom_components/integration_blueprint/manifest.json",
+          "path": "custom_components/neakasa_litterbox/manifest.json",
           "jsonpath": "$.version"
         }
       ],

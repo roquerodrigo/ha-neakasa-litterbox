@@ -10,6 +10,14 @@ if [ -d "${PWD}/.venv" ]; then
     export VIRTUAL_ENV="${PWD}/.venv"
 fi
 
+# macOS Python builds ship without a trusted CA bundle, so aiohttp / the SDK
+# fail TLS verification against the Neakasa cloud. Point OpenSSL at certifi's
+# bundle from the venv when it's available.
+if [ -z "${SSL_CERT_FILE:-}" ] && python3 -m certifi >/dev/null 2>&1; then
+    export SSL_CERT_FILE="$(python3 -m certifi)"
+    export REQUESTS_CA_BUNDLE="${SSL_CERT_FILE}"
+fi
+
 # Create config dir if not present
 if [[ ! -d "${PWD}/config" ]]; then
     mkdir -p "${PWD}/config"
@@ -17,7 +25,7 @@ if [[ ! -d "${PWD}/config" ]]; then
 fi
 
 # Set the path to custom_components
-## This let's us have the structure we want <root>/custom_components/integration_blueprint
+## This let's us have the structure we want <root>/custom_components/neakasa_litterbox
 ## while at the same time have Home Assistant configuration inside <root>/config
 ## without resulting to symlinks.
 export PYTHONPATH="${PYTHONPATH}:${PWD}/custom_components"

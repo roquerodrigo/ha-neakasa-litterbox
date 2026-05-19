@@ -50,4 +50,4 @@ jobs:
         run: python3 -m pip install -r requirements.txt
 
       - name: Type check
-        run: python3 -m mypy custom_components/integration_blueprint
+        run: python3 -m mypy custom_components/neakasa_litterbox

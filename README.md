@@ -1,56 +1,118 @@
-# Home Assistant Integration Blueprint
+# Neakasa Litterbox for Home Assistant
 
-[![HACS Validate](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/validate.yml/badge.svg)](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/validate.yml)
-[![Lint](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/lint.yml/badge.svg)](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/codeql.yml/badge.svg)](https://github.com/roquerodrigo/ha-integration-blueprint/actions/workflows/codeql.yml)
+[![HACS Validate](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/validate.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/validate.yml)
+[![Lint](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/lint.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/lint.yml)
+[![CodeQL](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/codeql.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
-Template for creating custom [Home Assistant](https://www.home-assistant.io/) integrations distributable via [HACS](https://hacs.xyz/).
+Home Assistant integration for the [Neakasa M1](https://www.neakasa.com/) self-cleaning litter box. Talks to the Neakasa cloud through the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/), so it works without LAN-side setup: one config entry per account exposes every litter box bound to it, plus a sub-device per cat profile registered in the Neakasa app.
 
-Based on [ludeeus/integration_blueprint](https://github.com/ludeeus/integration_blueprint), with adaptations used in the [@roquerodrigo](https://github.com/roquerodrigo) integrations. Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); architectural notes for AI agents in [`CLAUDE.md`](./CLAUDE.md).
+The integration is **cloud push**: an MQTT status stream keeps state in real time, with a longer polling cadence as a safety net.
 
 ## Add to Home Assistant
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-integration-blueprint&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-neakasa-litterbox&category=integration)
 
-## What's included
+## Features
 
-- **Full integration scaffold** with `DataUpdateCoordinator`, config flow, options flow, sample sensor and typed `runtime_data`.
-- **Reauth + reconfigure flows** triggered automatically by `ConfigEntryAuthFailed` or by the user.
-- **Options flow** with a configurable `scan_interval` plumbed through to the coordinator.
-- **Diagnostics platform** with credential redaction (`diagnostics.py`).
-- **Repairs platform** (`repairs.py`) wired into HA's Issue Registry, with sample issue + `ConfirmRepairFlow`.
-- **CI**: ruff lint + format, mypy type-check, `hassfest`, HACS validation, CodeQL security scan.
-- **Pre-commit hooks** (`.pre-commit-config.yaml`) — ruff + JSON/YAML/TOML checks.
-- **Coverage gate** at 95 % enforced by `pytest.ini` (currently at 100 %).
-- **Devcontainer** (Debian + Python 3.14) and VS Code extension recommendations.
-- **Scripts** that auto-detect `./.venv` (no `source activate` needed) to start HA in debug or run lint.
-- **Tests** with `pytest-homeassistant-custom-component` covering init, config + reauth + reconfigure flows, options flow, coordinator, API client, base entity, sensor, diagnostics, repairs and translation parity.
-- **Issue templates**, **PR template**, **`.editorconfig`** and grouped Dependabot updates.
-- **Translations** for English and Brazilian Portuguese (with parity test).
+- Multiple litter boxes per account, discovered dynamically.
+- Sub-device per cat (with `via_device` pointing at the litter box).
+- Real-time updates via MQTT push, with polling fallback (default 10 min).
+- Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
+- Bucket-full sensor debounced: only flips on after **5 consecutive minutes** of the device reporting it full.
+- Per-region (US / EU / AP) login, reauth and reconfigure flows.
+- Translations: English and Brazilian Portuguese.
 
-## How to use
+## Entities
 
-1. Use this repository as a **template** on GitHub ("Use this template" button) or clone it manually.
-2. Rename the domain throughout the codebase:
-   - `custom_components/integration_blueprint/` → `custom_components/<your_domain>/`
-   - `DOMAIN = "integration_blueprint"` in `const.py`; `domain` in `manifest.json`; `name` in `hacs.json`
-   - `name`, `documentation`, `issue_tracker`, `codeowners` in `manifest.json`
-   - Rename classes: `IntegrationBlueprint*` → `<YourDomain>*`
-   - Run `grep -rn integration_blueprint .` to catch leftover imports (especially in `tests/`)
-3. Replace the sample API in `api.py` with your real client and adjust `coordinator.py`, `config_flow.py`, `sensor.py` to match.
-4. Update `translations/en.json` and `translations/pt-BR.json` (parity is enforced by tests).
-5. Replace the placeholder brand assets in `custom_components/integration_blueprint/brand/` (`icon.png`, `icon@2x.png`, `logo.png`, `logo@2x.png`) with your own — these satisfy the HACS brand check locally until you register the integration in [`home-assistant/brands`](https://github.com/home-assistant/brands).
-6. Update `README.md` and `CLAUDE.md` for your integration.
+Per litter box (`device_name → "Neakasa M1"`):
 
-## Useful commands
+| Platform | Entity | Notes |
+|---|---|---|
+| `sensor` | Sand level | percentage |
+| `sensor` | Visits today | count since local midnight |
+| `sensor` | Last visit | timestamp of the most recent `CAT_VISIT` |
+| `binary_sensor` | Needs cleaning | `device_class=problem` |
+| `binary_sensor` | Waste bucket full | `device_class=problem`, debounced 5 min |
+| `switch` | Auto clean | `EntityCategory.CONFIG` |
+| `switch` | Auto level | `EntityCategory.CONFIG` |
+| `switch` | Silent mode | `EntityCategory.CONFIG` |
+| `switch` | Child lock | `EntityCategory.CONFIG` |
+| `button` | Clean now | one-shot trigger |
+| `button` | Level now | one-shot trigger |
+| `number` | Sand calibration | 0–100 % in 10 % steps, `EntityCategory.CONFIG` |
+
+Per cat (sub-device of the litter box):
+
+| Platform | Entity | Notes |
+|---|---|---|
+| `sensor` | Weight | weight measured on the cat's most recent visit (kg) |
+| `sensor` | Last visit | timestamp |
+| `sensor` | Visits today | count since local midnight |
+
+## Setup
+
+1. Install via HACS (recommended) or copy `custom_components/neakasa_litterbox/` into your config.
+2. **Settings → Devices & Services → Add Integration → Neakasa Litterbox**.
+3. Enter the **email and password** you use in the Neakasa app and pick the **region** (US / EU / AP) that matches your account.
+4. The integration logs in, opens the MQTT push stream and registers every device + cat the account has.
+
+If the credentials become invalid later, Home Assistant raises the standard reauth dialog. To change the region or rotate the password without removing the entry, use the integration's three-dot menu → **Reconfigure**.
+
+## Options
+
+Via the integration's **⚙ Configure** dialog:
+
+| Option | Default | Range | Effect |
+|---|---|---|---|
+| `Polling interval (seconds)` | 600 | ≥ 60 | How often the coordinator falls back to a poll. MQTT push usually delivers updates well before the next poll. |
+| `Statistics lookback (days)` | 7 | 1–30 | Window used by the coordinator when pulling `ToiletRecord`s for per-cat last-visit / visits-today sensors. |
+
+## How real-time updates work
+
+The integration keeps two channels open against the Neakasa cloud:
+
+- **MQTT push** (`cloud_push`): subscribes via `watch_status()` on the SDK and merges deltas into coordinator data as they arrive (sand percent, switch flips, presence flags…).
+- **Polling fallback**: every `scan_interval` seconds the coordinator re-fetches `list_devices` + `get_status` + `list_cats` + `get_toilet_records` in parallel per device, so state stays correct even if the MQTT stream drops.
+
+The MQTT client uses `tls_insecure=True` because Aliyun-fronted brokers don't always present a chain that the bundled Python OpenSSL trusts; the broker URL still uses TLS, only certificate validation is skipped on the push channel.
+
+## Optimistic state
+
+Switches, the sand-calibration slider and buttons run an **optimistic update**: after the SDK call returns, the integration patches the local `DeviceStatus` snapshot so the UI reflects the new state immediately. The MQTT push that follows (typically within 1–2 s) confirms the change. The previous design called `coordinator.async_request_refresh()` right after each command and then snapped the UI back to the cloud's pre-command state — that race is gone.
+
+## Bucket-full debounce
+
+`binary_sensor.<device>_waste_bucket_full` only goes **on** after the device reports `bucket_full=True` for **300 consecutive seconds** (5 min). Any reading of `False` clears the dwell timer immediately and resets the sensor. This filters out the brief flap that happens during clean cycles.
+
+## Compatibility
+
+| Component | Version |
+|---|---|
+| Home Assistant | ≥ 2026.5.1 (matches `requirements.txt`, `hacs.json`, and `requirements_test.txt`) |
+| Python | 3.14 |
+| `neakasa-litterbox-sdk` | 0.1.1 |
+
+The integration targets the **Platinum** tier of Home Assistant's [Integration Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/) — see [`custom_components/neakasa_litterbox/quality_scale.yaml`](./custom_components/neakasa_litterbox/quality_scale.yaml).
+
+## Diagnostics
+
+Use **⚙ Configure → Download diagnostics** to get a redacted dump (email and password are stripped) of the config entry and the currently-registered devices. Attach the file when opening an issue.
+
+## Known limitations
+
+- The Neakasa cloud occasionally drops the MQTT dispatcher (`Disconnected during message iteration`). The integration currently does **not** auto-reconnect; restart the entry to bring push back. Polling fallback keeps working in the meantime.
+- The Neakasa SDK does not expose a way to disable HTTPS verification, so the integration assumes the local Python install can validate `*.neakasa.com` (most distributions can; on macOS Python builds the helper script auto-injects `certifi`'s bundle — see [`scripts/develop`](./scripts/develop)).
+- Firmware version is surfaced as **device metadata** (visible on the device card) rather than as a dedicated sensor.
+
+## Development
 
 ```bash
-scripts/setup      # install dependencies (requirements.txt)
-scripts/develop    # start Home Assistant in debug mode with the integration loaded
+scripts/setup      # install requirements.txt
+scripts/develop    # start Home Assistant in debug mode with this integration loaded
 scripts/lint       # ruff format + check + mypy
-pytest             # run tests with the 95 % coverage gate
+pytest             # run the test suite (95 % coverage gate enforced)
 ```
 
 Each script auto-detects `./.venv` and prepends it to `PATH` — no `source .venv/bin/activate` needed. For ad-hoc commands the same trick works: `.venv/bin/pytest`, `.venv/bin/ruff …`.
@@ -61,49 +123,17 @@ HA runs with config in `config/` and `PYTHONPATH` pointing at `custom_components
 rm config/.storage/core.entity_registry config/.storage/core.device_registry
 ```
 
-## Layout
-
-```
-custom_components/integration_blueprint/
-├── __init__.py        # async_setup_entry / unload / reload
-├── api.py             # ApiClient (single class)
-├── config_flow.py     # user / reauth / reconfigure steps
-├── const.py           # DOMAIN, LOGGER, URLs, ATTRIBUTION, scan-interval defaults
-├── coordinator.py     # DataUpdateCoordinator (interval injected from options)
-├── data.py            # typed ConfigEntry + IntegrationBlueprintData dataclass + TypedDicts
-├── diagnostics.py     # downloadable diagnostics with credential redaction
-├── entity.py          # base CoordinatorEntity
-├── exceptions/        # one file per exception class
-│   ├── __init__.py
-│   ├── api_client_authentication_error.py
-│   ├── api_client_communication_error.py
-│   └── api_client_error.py
-├── manifest.json
-├── options_flow.py    # OptionsFlow with scan_interval
-├── repairs.py         # Repair platform: async_create_fix_flow + sample issue
-├── sensor.py          # sample platform
-└── translations/
-    ├── en.json
-    └── pt-BR.json
-```
-
-Layout convention (one top-level class per file; related classes grouped under a directory) is documented in [`CODE_STYLE.md`](./CODE_STYLE.md).
-
-## Pre-commit hooks
-
-Install once per clone (after `scripts/setup`):
-
-```bash
-pre-commit install
-```
-
-This wires ruff + basic file hygiene checks (`.pre-commit-config.yaml`) into every commit, mirroring the CI lint job.
+Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); architectural notes for AI agents in [`CLAUDE.md`](./CLAUDE.md).
 
 ## CI
 
 - **`lint.yml`** — ruff (check + format) and mypy (Python 3.14)
 - **`validate.yml`** — `hassfest` + HACS validation; push/PR to `main` and a daily cron
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
+
+## Acknowledgements
+
+Bootstrapped from [ludeeus/integration_blueprint](https://github.com/ludeeus/integration_blueprint). Powered by the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/).
 
 ## License
 

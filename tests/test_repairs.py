@@ -3,8 +3,8 @@ from __future__ import annotations
 from homeassistant.components.repairs import ConfirmRepairFlow
 from homeassistant.helpers import issue_registry as ir
 
-from custom_components.integration_blueprint.const import DOMAIN
-from custom_components.integration_blueprint.repairs import (
+from custom_components.neakasa_litterbox.const import DOMAIN
+from custom_components.neakasa_litterbox.repairs import (
     ISSUE_DEPRECATED_API,
     async_create_fix_flow,
     async_raise_deprecated_api_issue,

@@ -25,6 +25,9 @@ keep-runtime-typing = true
 max-complexity = 25
 
 [lint.per-file-ignores]
+"custom_components/neakasa_litterbox/**" = [
+    "TID252", # parent-package relative imports are the project convention within the integration package
+]
 "tests/**" = [
     "S101",    # assert is normal in pytest
     "S105",    # hardcoded-password-string is fine for fake test credentials
@@ -35,4 +38,8 @@ max-complexity = 25
     "PLC0415", # local imports inside fixtures are intentional
     "SLF001",  # testing private HA attrs and internal methods is intentional
     "PLR2004", # magic numbers in test assertions are fine
+    "PLR0913", # parametrized tests legitimately accept many fixtures
+    "EM101",   # short exception messages are fine in tests
+    "TRY003",  # short exception messages are fine in tests
+    "FBT003",  # asserting on bool positional args mirrors the SDK contract
 ]

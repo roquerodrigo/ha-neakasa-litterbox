@@ -1,0 +1,104 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurar Neakasa Litterbox",
+                "description": "Informe as credenciais da sua conta Neakasa.",
+                "data": {
+                    "username": "E-mail",
+                    "password": "Senha",
+                    "region": "Região"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Re-autenticar Neakasa Litterbox",
+                "description": "Suas credenciais não são mais válidas. Informe as credenciais atualizadas.",
+                "data": {
+                    "username": "E-mail",
+                    "password": "Senha",
+                    "region": "Região"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigurar Neakasa Litterbox",
+                "description": "Atualize as credenciais e a região desta conta.",
+                "data": {
+                    "username": "E-mail",
+                    "password": "Senha",
+                    "region": "Região"
+                }
+            }
+        },
+        "error": {
+            "auth": "E-mail ou senha incorretos.",
+            "connection": "Não foi possível conectar à nuvem Neakasa.",
+            "unknown": "Ocorreu um erro desconhecido."
+        },
+        "abort": {
+            "already_configured": "Esta conta já está configurada.",
+            "reauth_successful": "Re-autenticação concluída com sucesso.",
+            "reconfigure_successful": "Reconfiguração concluída com sucesso."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opções do Neakasa Litterbox",
+                "description": "Ajuste polling e janela de estatísticas desta conta.",
+                "data": {
+                    "scan_interval": "Intervalo de polling (segundos)",
+                    "statistics_lookback_days": "Janela de estatísticas (dias)"
+                }
+            }
+        }
+    },
+    "selector": {
+        "region": {
+            "options": {
+                "US": "Estados Unidos",
+                "EU": "Europa",
+                "AP": "Ásia / Pacífico"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "bucket_full": {"name": "Caixa de resíduos cheia"},
+            "needs_cleaning": {"name": "Precisa de limpeza"}
+        },
+        "button": {
+            "clean_now": {"name": "Limpar agora"},
+            "level_now": {"name": "Nivelar agora"}
+        },
+        "number": {
+            "calibrate_sand": {"name": "Calibração de areia"}
+        },
+        "sensor": {
+            "cat_last_visit": {"name": "Última visita"},
+            "cat_visits_today": {"name": "Visitas hoje"},
+            "cat_weight": {"name": "Peso"},
+            "last_visit": {"name": "Última visita"},
+            "sand_percent": {"name": "Nível de areia"},
+            "visits_today": {"name": "Visitas hoje"}
+        },
+        "switch": {
+            "auto_clean": {"name": "Limpeza automática"},
+            "auto_level": {"name": "Nivelamento automático"},
+            "child_lock": {"name": "Trava infantil"},
+            "silent_mode": {"name": "Modo silencioso"}
+        }
+    },
+    "issues": {
+        "deprecated_api": {
+            "title": "Endpoint da API depreciado em uso",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Migrar para a API suportada",
+                        "description": "O endpoint usado por esta integração foi depreciado. Clique em enviar para confirmar; atualize a configuração da integração para usar o novo endpoint."
+                    }
+                }
+            }
+        }
+    }
+}

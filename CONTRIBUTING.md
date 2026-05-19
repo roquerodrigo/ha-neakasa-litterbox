@@ -46,7 +46,7 @@ The project uses [ruff](https://docs.astral.sh/ruff/) (config in `.ruff.toml`). 
 
 ## Test your code modification
 
-This template is based on [integration_blueprint template](https://github.com/ludeeus/integration_blueprint).
+This integration was bootstrapped from [ludeeus/integration_blueprint](https://github.com/ludeeus/integration_blueprint).
 
 It comes with a development environment in a container, easy to launch if you use Visual Studio Code. With this container you will have a stand-alone Home Assistant instance running and already configured with the included [`configuration.yaml`](./config/configuration.yaml) file.
 

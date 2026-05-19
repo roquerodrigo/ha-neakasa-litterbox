@@ -1,0 +1,104 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Set up Neakasa Litterbox",
+                "description": "Enter the credentials of your Neakasa account.",
+                "data": {
+                    "username": "Email",
+                    "password": "Password",
+                    "region": "Region"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Re-authenticate Neakasa Litterbox",
+                "description": "Your credentials are no longer valid. Enter the updated credentials.",
+                "data": {
+                    "username": "Email",
+                    "password": "Password",
+                    "region": "Region"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Neakasa Litterbox",
+                "description": "Update the credentials and region for this account.",
+                "data": {
+                    "username": "Email",
+                    "password": "Password",
+                    "region": "Region"
+                }
+            }
+        },
+        "error": {
+            "auth": "Email or password is wrong.",
+            "connection": "Unable to connect to the Neakasa cloud.",
+            "unknown": "Unknown error occurred."
+        },
+        "abort": {
+            "already_configured": "This account is already configured.",
+            "reauth_successful": "Re-authentication was successful.",
+            "reconfigure_successful": "Reconfiguration was successful."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Neakasa Litterbox options",
+                "description": "Tune polling and statistics for this account.",
+                "data": {
+                    "scan_interval": "Polling interval (seconds)",
+                    "statistics_lookback_days": "Statistics lookback (days)"
+                }
+            }
+        }
+    },
+    "selector": {
+        "region": {
+            "options": {
+                "US": "United States",
+                "EU": "Europe",
+                "AP": "Asia / Pacific"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "bucket_full": {"name": "Waste bucket full"},
+            "needs_cleaning": {"name": "Needs cleaning"}
+        },
+        "button": {
+            "clean_now": {"name": "Clean now"},
+            "level_now": {"name": "Level now"}
+        },
+        "number": {
+            "calibrate_sand": {"name": "Sand calibration"}
+        },
+        "sensor": {
+            "cat_last_visit": {"name": "Last visit"},
+            "cat_visits_today": {"name": "Visits today"},
+            "cat_weight": {"name": "Weight"},
+            "last_visit": {"name": "Last visit"},
+            "sand_percent": {"name": "Sand level"},
+            "visits_today": {"name": "Visits today"}
+        },
+        "switch": {
+            "auto_clean": {"name": "Auto clean"},
+            "auto_level": {"name": "Auto level"},
+            "child_lock": {"name": "Child lock"},
+            "silent_mode": {"name": "Silent mode"}
+        }
+    },
+    "issues": {
+        "deprecated_api": {
+            "title": "Deprecated API endpoint in use",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Switch to the supported API",
+                        "description": "The endpoint this integration was using has been deprecated. Click submit to acknowledge; update the integration's config to use the new endpoint."
+                    }
+                }
+            }
+        }
+    }
+}

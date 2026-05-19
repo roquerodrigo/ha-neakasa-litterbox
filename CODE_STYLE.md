@@ -1,6 +1,6 @@
 # Code Style Guide
 
-Style conventions for the `ha-integration-blueprint` project. Run `scripts/lint`
+Style conventions for the `ha-neakasa-litterbox` project. Run `scripts/lint`
 before committing — it executes `ruff format`, `ruff check --fix` and `mypy`,
 and must exit cleanly. `pytest` (with the 95 % coverage gate) follows.
 
@@ -30,7 +30,7 @@ that file in the same PR that satisfies a new rule.
   variable names, dictionary keys, identifier strings.
 - The conversation language with the user can be Portuguese or anything else;
   what is committed to disk stays English.
-- User-facing strings live in `custom_components/integration_blueprint/translations/{en,pt-BR}.json`
+- User-facing strings live in `custom_components/neakasa_litterbox/translations/{en,pt-BR}.json`
   only — never hardcoded in Python.
 
 ## File organization
@@ -59,20 +59,20 @@ that file in the same PR that satisfies a new rule.
   (or a plain `EntityDescription` instance assigned at the class level).
   - Don't write an `<DOMAIN><Platform>Description` subclass with a
     `value_fn` / `action_fn` field.
-  - Do write `<DOMAIN><Name><Platform>` (e.g. `IntegrationBlueprintStatusSensor`,
-    `IntegrationBlueprintCancelButton`, `IntegrationBlueprintDoorBinarySensor`).
+  - Do write `<DOMAIN><Name><Platform>` (e.g. `NeakasaStatusSensor`,
+    `NeakasaCancelButton`, `NeakasaDoorBinarySensor`).
 - The reason: each entity is a discrete contract; mixing them through a
   generic class hides the contract behind indirection and discourages per-entity
   refinement (icons, state attributes, custom logic).
 
 ## Naming
 
-- Public classes are prefixed with `IntegrationBlueprint` (rename to
+- Public classes are prefixed with `Neakasa` (rename to
   `<YourDomain>` when forking).
 - Concrete platform entities end with the entity type:
-  `IntegrationBlueprintSensor`, `IntegrationBlueprintBinarySensor`,
-  `IntegrationBlueprintSwitch`.
-- Exception classes end with `Error`: `IntegrationBlueprintApiClientError`,
+  `NeakasaSensor`, `NeakasaBinarySensor`,
+  `NeakasaSwitch`.
+- Exception classes end with `Error`: `NeakasaApiClientError`,
   `…CommunicationError`, `…AuthenticationError`.
 - Private attributes / functions are prefixed with `_`.
 
@@ -86,9 +86,9 @@ Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 Required:
 
 - `TypedDict` for known dict / JSON shapes (see `data.py` for the canonical
-  examples: `IntegrationBlueprintPost`, `IntegrationBlueprintConfigData`,
-  `IntegrationBlueprintOptionsData`, `IntegrationBlueprintDiagnosticsPayload`).
-- `@dataclass` for structured records (`IntegrationBlueprintData`).
+  examples: `NeakasaPost`, `NeakasaConfigData`,
+  `NeakasaOptionsData`, `NeakasaDiagnosticsPayload`).
+- `@dataclass` for structured records (`NeakasaData`).
 - Named `type` aliases for recursive / shared shapes — `JsonPrimitive`,
   `JsonValue`, `JsonObject` in `data.py`.
 - `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
@@ -125,7 +125,7 @@ with a one-line comment explaining the deliberate narrowing — see
 
   if TYPE_CHECKING:
       from collections.abc import Mapping
-      from .data import IntegrationBlueprintConfigData
+      from .data import NeakasaConfigData
   ```
 
 - `noqa` comments are reserved for unavoidable framework constraints (e.g.
@@ -183,18 +183,18 @@ with a one-line comment explaining the deliberate narrowing — see
   the bad input, not a downstream traceback (`config_flow._validate` rejects
   malformed credentials before contacting the API).
 - Custom exceptions get the same hierarchy:
-  `IntegrationBlueprintApiClientError` (base) → `…CommunicationError` (timeout,
+  `NeakasaApiClientError` (base) → `…CommunicationError` (timeout,
   connection, DNS) and `…AuthenticationError` (401/403). Wrap raw upstream
   errors at the API client boundary; everything above only catches the
   custom hierarchy.
 
 ## Coordinator and runtime data
 
-- All API state flows through `entry.runtime_data: IntegrationBlueprintData`
+- All API state flows through `entry.runtime_data: NeakasaData`
   (`data.py`). Never store integration state in `hass.data` — `runtime_data` is
   auto-discarded on unload, the legacy `hass.data[DOMAIN][entry_id]` pattern is
   not.
-- The coordinator is typed as `DataUpdateCoordinator[IntegrationBlueprintPost]`
+- The coordinator is typed as `DataUpdateCoordinator[NeakasaPost]`
   (or whatever your real payload TypedDict is). `_async_update_data` returns
   the typed payload.
 - Use `await coordinator.async_config_entry_first_refresh()` during
@@ -220,13 +220,13 @@ with a one-line comment explaining the deliberate narrowing — see
 - `config_flow.py` carries `user`, `reauth`, `reauth_confirm` and `reconfigure`
   steps, all sharing one `_validate` helper and one `_credentials_schema`
   builder.
-- `options_flow.py` holds the single `IntegrationBlueprintOptionsFlow`
-  class. New options keys go into the `IntegrationBlueprintOptionsData`
+- `options_flow.py` holds the single `NeakasaOptionsFlow`
+  class. New options keys go into the `NeakasaOptionsData`
   TypedDict in `data.py`.
 - `repairs.py` exposes `async_create_fix_flow`. Sample helpers like
   `async_raise_deprecated_api_issue` show how to register issues from anywhere
   in the integration.
-- `diagnostics.py` returns `IntegrationBlueprintDiagnosticsPayload`. Sensitive
+- `diagnostics.py` returns `NeakasaDiagnosticsPayload`. Sensitive
   keys go into the `TO_REDACT: frozenset[str]` constant.
 
 ## Translations

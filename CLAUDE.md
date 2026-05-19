@@ -49,7 +49,7 @@ sensor.py        → reads coordinator.data and creates the entities
 
 ### Entry typing
 
-`data.py` defines `IntegrationBlueprintConfigEntry = ConfigEntry[IntegrationBlueprintData]` and the `IntegrationBlueprintData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
+`data.py` defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
 ### Config flow surface
 
@@ -58,7 +58,7 @@ sensor.py        → reads coordinator.data and creates the entities
 - `async_step_user` — initial setup; sets unique_id from username, aborts on duplicate.
 - `async_step_reauth` / `async_step_reauth_confirm` — fired when the coordinator raises `ConfigEntryAuthFailed`. `async_update_reload_and_abort` rotates credentials in place.
 - `async_step_reconfigure` — lets the user edit credentials via the integration's three-dot menu, no delete-and-re-add cycle.
-- `async_get_options_flow` — returns `IntegrationBlueprintOptionsFlow` from `options_flow.py` (one class per file).
+- `async_get_options_flow` — returns `NeakasaOptionsFlow` from `options_flow.py` (one class per file).
 
 ### Options flow
 
@@ -66,17 +66,17 @@ sensor.py        → reads coordinator.data and creates the entities
 
 ### API client
 
-`api.py` exposes `IntegrationBlueprintApiClient` plus the `_verify_response_or_raise` helper. Exceptions live under `exceptions/`:
+`api.py` exposes `NeakasaApiClient` plus the `_verify_response_or_raise` helper. Exceptions live under `exceptions/`:
 
-- `IntegrationBlueprintApiClientError` (base)
-- `IntegrationBlueprintApiClientCommunicationError` (timeout, connection)
-- `IntegrationBlueprintApiClientAuthenticationError` (401/403)
+- `NeakasaApiClientError` (base)
+- `NeakasaApiClientCommunicationError` (timeout, connection)
+- `NeakasaApiClientAuthenticationError` (401/403)
 
 `_api_wrapper` maps `TimeoutError`, `aiohttp.ClientError` and `socket.gaierror` to `CommunicationError`; any other exception becomes the base error.
 
 ### Diagnostics
 
-`diagnostics.py` returns `IntegrationBlueprintDiagnosticsPayload`. `username`/`password` are redacted via `async_redact_data` (driven by `TO_REDACT: frozenset[str]`). `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.
+`diagnostics.py` returns `NeakasaDiagnosticsPayload`. `username`/`password` are redacted via `async_redact_data` (driven by `TO_REDACT: frozenset[str]`). `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.
 
 ### Repairs
 
