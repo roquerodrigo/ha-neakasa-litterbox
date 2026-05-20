@@ -149,7 +149,7 @@ async def setup_integration(hass, mock_api_client, enable_custom_integrations):
         data={
             "username": "user@example.com",
             "password": "pass",
-            "region": "US",
+            "region": "us",
         },
         unique_id="user-example-com",
     )

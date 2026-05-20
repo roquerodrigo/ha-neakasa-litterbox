@@ -25,7 +25,7 @@ def _client(sdk_mock=None) -> NeakasaApiClient:
         "custom_components.neakasa_litterbox.api.NeakasaClient",
         return_value=sdk_mock or MagicMock(),
     ):
-        return NeakasaApiClient(username="u@x", password="p", region="US")
+        return NeakasaApiClient(username="u@x", password="p", region="us")
 
 
 def test_translate_invalid_credentials_to_auth_error():
@@ -82,7 +82,7 @@ def test_unknown_region_raises_api_error():
 
 def test_constructor_uses_known_region():
     with patch("custom_components.neakasa_litterbox.api.NeakasaClient") as mock_sdk:
-        client = NeakasaApiClient(username="u@x", password="p", region="EU")
+        client = NeakasaApiClient(username="u@x", password="p", region="eu")
     assert client.sdk is mock_sdk.return_value
     assert mock_sdk.call_args.kwargs["email"] == "u@x"
     assert mock_sdk.call_args.kwargs["region"].name == "EU"

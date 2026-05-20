@@ -20,8 +20,11 @@ MAX_STATISTICS_LOOKBACK_DAYS = 30
 CONF_REGION = "region"
 CONF_STATISTICS_LOOKBACK_DAYS = "statistics_lookback_days"
 
-REGION_US = "US"
-REGION_EU = "EU"
-REGION_AP = "AP"
+# Region codes are lowercase to satisfy HA's translation-key regex
+# ([a-z0-9-_]+); the API client uppercases them when looking up the
+# matching ``Region`` enum value in the SDK.
+REGION_US = "us"
+REGION_EU = "eu"
+REGION_AP = "ap"
 REGIONS: tuple[str, ...] = (REGION_US, REGION_EU, REGION_AP)
 DEFAULT_REGION = REGION_US

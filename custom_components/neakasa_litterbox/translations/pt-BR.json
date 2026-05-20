@@ -55,9 +55,9 @@
     "selector": {
         "region": {
             "options": {
-                "US": "Estados Unidos",
-                "EU": "Europa",
-                "AP": "Ásia / Pacífico"
+                "us": "Estados Unidos",
+                "eu": "Europa",
+                "ap": "Ásia / Pacífico"
             }
         }
     },

@@ -14,8 +14,8 @@ from custom_components.neakasa_litterbox.exceptions import (
     NeakasaApiClientError,
 )
 
-USER_INPUT = {"username": "user@example.com", "password": "pass", "region": "US"}
-NEW_INPUT = {"username": "user@example.com", "password": "newpass", "region": "EU"}
+USER_INPUT = {"username": "user@example.com", "password": "pass", "region": "us"}
+NEW_INPUT = {"username": "user@example.com", "password": "newpass", "region": "eu"}
 
 
 @contextmanager
@@ -165,7 +165,7 @@ async def test_reauth_success_updates_entry(hass, enable_custom_integrations):
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data["password"] == "newpass"
-    assert entry.data["region"] == "EU"
+    assert entry.data["region"] == "eu"
 
 
 async def test_reauth_auth_error_shows_auth(hass, enable_custom_integrations):

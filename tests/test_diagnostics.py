@@ -17,7 +17,7 @@ async def test_diagnostics_redacts_password(hass, setup_integration):
 
 async def test_diagnostics_keeps_region(hass, setup_integration):
     diag = await async_get_config_entry_diagnostics(hass, setup_integration)
-    assert diag["entry"]["data"]["region"] == "US"
+    assert diag["entry"]["data"]["region"] == "us"
 
 
 async def test_diagnostics_includes_entry_metadata(hass, setup_integration):

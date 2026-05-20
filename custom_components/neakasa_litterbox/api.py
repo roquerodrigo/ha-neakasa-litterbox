@@ -61,7 +61,7 @@ class NeakasaApiClient:
     ) -> None:
         """Build a client bound to ``region`` (US/EU/AP)."""
         try:
-            sdk_region = Region[region]
+            sdk_region = Region[region.upper()]
         except KeyError as exc:
             msg = f"Unknown Neakasa region: {region}"
             raise NeakasaApiClientError(msg) from exc

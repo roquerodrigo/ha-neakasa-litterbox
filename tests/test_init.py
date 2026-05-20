@@ -79,7 +79,7 @@ async def test_scan_interval_picks_up_options(
 
     entry = MockConfigEntry(
         domain=DOMAIN,
-        data={"username": "u@x", "password": "p", "region": "US"},
+        data={"username": "u@x", "password": "p", "region": "us"},
         options={CONF_SCAN_INTERVAL: 90},
         unique_id="ux",
     )
@@ -97,7 +97,7 @@ async def test_setup_entry_translates_auth_error(hass, enable_custom_integration
         mock_class.return_value.async_close = AsyncMock(return_value=None)
         entry = MockConfigEntry(
             domain=DOMAIN,
-            data={"username": "u@x", "password": "p", "region": "US"},
+            data={"username": "u@x", "password": "p", "region": "us"},
             unique_id="ux",
         )
         entry.add_to_hass(hass)
@@ -116,7 +116,7 @@ async def test_setup_entry_translates_communication_error(
         mock_class.return_value.async_close = AsyncMock(return_value=None)
         entry = MockConfigEntry(
             domain=DOMAIN,
-            data={"username": "u@x", "password": "p", "region": "US"},
+            data={"username": "u@x", "password": "p", "region": "us"},
             unique_id="ux2",
         )
         entry.add_to_hass(hass)
