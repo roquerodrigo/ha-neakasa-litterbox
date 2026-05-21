@@ -27,6 +27,7 @@ from .data import (
 )
 from .exceptions import (
     NeakasaApiClientAuthenticationError,
+    NeakasaApiClientCommunicationError,
     NeakasaApiClientError,
 )
 
@@ -38,6 +39,10 @@ if TYPE_CHECKING:
     from neakasa_litterbox_sdk import Cat, Device, DeviceStatus, ToiletRecord
 
     from .data import NeakasaConfigEntry
+
+
+_TRANSIENT_RETRY_ATTEMPTS = 3
+_TRANSIENT_RETRY_BASE_DELAY = 2.0
 
 
 class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
@@ -66,21 +71,45 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
         )
 
     async def _async_update_data(self) -> NeakasaPayload:
-        """Fetch devices, status, cats and records in parallel per device."""
-        client = self.config_entry.runtime_data.client
-        try:
-            devices = await client.async_list_devices()
-            snapshots = await asyncio.gather(
-                *(self._fetch_device_snapshot(device) for device in devices),
-            )
-        except NeakasaApiClientAuthenticationError as exc:
-            raise ConfigEntryAuthFailed(str(exc)) from exc
-        except NeakasaApiClientError as exc:
-            raise UpdateFailed(str(exc)) from exc
+        """
+        Fetch devices, status, cats and records in parallel per device.
 
-        return NeakasaPayload(
-            devices={snap.device["iot_id"]: snap for snap in snapshots},
-        )
+        Transient transport errors (DNS hiccups, TLS handshake retries
+        against the cloud) get one or two short retries instead of
+        immediately marking entities unavailable until the next 10-min
+        scan window.
+        """
+        client = self.config_entry.runtime_data.client
+        last_comm_error: NeakasaApiClientCommunicationError | None = None
+        for attempt in range(_TRANSIENT_RETRY_ATTEMPTS):
+            try:
+                devices = await client.async_list_devices()
+                snapshots = await asyncio.gather(
+                    *(self._fetch_device_snapshot(device) for device in devices),
+                )
+            except NeakasaApiClientAuthenticationError as exc:
+                raise ConfigEntryAuthFailed(str(exc)) from exc
+            except NeakasaApiClientCommunicationError as exc:
+                last_comm_error = exc
+                if attempt + 1 < _TRANSIENT_RETRY_ATTEMPTS:
+                    delay = _TRANSIENT_RETRY_BASE_DELAY * (2**attempt)
+                    LOGGER.debug(
+                        "Transient comms error on attempt %d/%d (%s); retry in %.1fs",
+                        attempt + 1,
+                        _TRANSIENT_RETRY_ATTEMPTS,
+                        exc,
+                        delay,
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+                raise UpdateFailed(str(exc)) from exc
+            except NeakasaApiClientError as exc:
+                raise UpdateFailed(str(exc)) from exc
+            return NeakasaPayload(
+                devices={snap.device["iot_id"]: snap for snap in snapshots},
+            )
+        # Loop only exits via return or raise; this is unreachable but keeps mypy happy.
+        raise UpdateFailed(str(last_comm_error))
 
     async def _fetch_device_snapshot(
         self,

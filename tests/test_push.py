@@ -30,19 +30,22 @@ def _snapshot(sample_device, sample_status, sample_cat) -> NeakasaDeviceSnapshot
 
 
 @pytest.fixture
-def push_setup(hass, sample_device, sample_status, sample_cat):
+async def push_setup(hass, sample_device, sample_status, sample_cat):
     snap = _snapshot(sample_device, sample_status, sample_cat)
     payload = NeakasaPayload(devices={snap.device["iot_id"]: snap})
     coordinator = MagicMock()
     coordinator.data = payload
     coordinator.async_set_updated_data = MagicMock()
+    coordinator.async_request_refresh = AsyncMock()
     stream = MagicMock()
     stream.start = AsyncMock()
     stream.stop = AsyncMock()
     api = MagicMock()
     api.watch_status = MagicMock(return_value=stream)
     push = NeakasaPushClient(hass=hass, api=api, coordinator=coordinator)
-    return push, api, stream, coordinator, snap
+    yield push, api, stream, coordinator, snap
+    # Cancel the reconnect supervisor so it doesn't outlive the test.
+    await push.async_stop()
 
 
 async def test_start_invokes_stream_start(push_setup):
@@ -86,7 +89,7 @@ async def test_stop_swallows_sdk_error(push_setup):
     assert push._stream is None
 
 
-def test_handle_change_updates_status(push_setup):
+async def test_handle_change_updates_status(push_setup):
     push, _, _, coordinator, snap = push_setup
     update = StatusUpdate(
         device_name=snap.device["device_name"],
@@ -100,7 +103,7 @@ def test_handle_change_updates_status(push_setup):
     assert new_snap.status.silent_mode is True
 
 
-def test_handle_change_ignored_without_payload(push_setup):
+async def test_handle_change_ignored_without_payload(push_setup):
     push, _, _, coordinator, _ = push_setup
     coordinator.data = None
     push._handle_change(
@@ -109,7 +112,7 @@ def test_handle_change_ignored_without_payload(push_setup):
     coordinator.async_set_updated_data.assert_not_called()
 
 
-def test_handle_change_ignored_for_unknown_device(push_setup):
+async def test_handle_change_ignored_for_unknown_device(push_setup):
     push, _, _, coordinator, _ = push_setup
     push._handle_change(
         StatusUpdate(device_name="other", changes={"sand_percent": 5}),
@@ -117,7 +120,7 @@ def test_handle_change_ignored_for_unknown_device(push_setup):
     coordinator.async_set_updated_data.assert_not_called()
 
 
-def test_handle_change_ignored_with_no_known_keys(push_setup):
+async def test_handle_change_ignored_with_no_known_keys(push_setup):
     push, _, _, coordinator, snap = push_setup
     push._handle_change(
         StatusUpdate(
