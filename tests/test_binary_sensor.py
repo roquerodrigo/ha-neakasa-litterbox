@@ -58,6 +58,49 @@ def test_needs_cleaning_none_without_snapshot(sample_device):
     assert s.is_on is None
 
 
+def test_needs_cleaning_cleared_when_clean_runs_after_visit(
+    sample_device, sample_status, sample_cat
+):
+    # Device still reports ``catLeft.needClean == 1`` because the
+    # firmware only refreshes that field on cat exit. The clean cycle
+    # timestamp is newer than the last visit, so the sensor should treat
+    # the box as clean.
+    status = dataclasses.replace(sample_status, needs_cleaning=True)
+    snap = dataclasses.replace(
+        _snapshot(sample_device, status, sample_cat),
+        last_visit_at=1_700_000_000,
+        last_clean_at=1_700_000_500,
+    )
+    s = NeakasaNeedsCleaningBinarySensor(_coord(snap), sample_device.iot_id)
+    assert s.is_on is False
+
+
+def test_needs_cleaning_still_on_when_visit_after_clean(
+    sample_device, sample_status, sample_cat
+):
+    status = dataclasses.replace(sample_status, needs_cleaning=True)
+    snap = dataclasses.replace(
+        _snapshot(sample_device, status, sample_cat),
+        last_visit_at=1_700_000_500,
+        last_clean_at=1_700_000_000,
+    )
+    s = NeakasaNeedsCleaningBinarySensor(_coord(snap), sample_device.iot_id)
+    assert s.is_on is True
+
+
+def test_needs_cleaning_honors_device_false_regardless_of_history(
+    sample_device, sample_status, sample_cat
+):
+    status = dataclasses.replace(sample_status, needs_cleaning=False)
+    snap = dataclasses.replace(
+        _snapshot(sample_device, status, sample_cat),
+        last_visit_at=1_700_000_500,
+        last_clean_at=1_700_000_000,
+    )
+    s = NeakasaNeedsCleaningBinarySensor(_coord(snap), sample_device.iot_id)
+    assert s.is_on is False
+
+
 def test_bucket_full_promotes_when_window_fills_with_true(
     sample_device, sample_status, sample_cat
 ):

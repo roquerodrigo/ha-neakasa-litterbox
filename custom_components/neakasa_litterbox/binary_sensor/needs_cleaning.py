@@ -23,6 +23,22 @@ class NeakasaNeedsCleaningBinarySensor(NeakasaDeviceEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return ``True`` if the box is signalling it needs cleaning."""
+        """
+        Return ``True`` if the box is signalling it needs cleaning.
+
+        The SDK derives ``needs_cleaning`` from ``catLeft.needClean``, a
+        device property the firmware only refreshes on cat exit — so the
+        flag stays ``True`` after a clean cycle until the next visit.
+        Cross-check the toilet-records timeline: if a clean (auto or
+        manual) ran after the latest cat visit, treat the box as clean.
+        """
         snap = self.snapshot
-        return None if snap is None else snap.status.needs_cleaning
+        if snap is None:
+            return None
+        if not snap.status.needs_cleaning:
+            return False
+        return not (
+            snap.last_clean_at is not None
+            and snap.last_visit_at is not None
+            and snap.last_clean_at >= snap.last_visit_at
+        )
