@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.2...v1.0.3) (2026-05-22)
+
+
+### Bug Fixes
+
+* **binary_sensor:** clear "needs cleaning" once a clean runs after the visit ([645aa9c](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/645aa9cd97c41150a764ee0b6c56708515e91f1f))
+
 ## [1.0.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.1...v1.0.2) (2026-05-22)
 
 
