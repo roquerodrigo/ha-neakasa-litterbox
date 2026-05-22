@@ -15,8 +15,6 @@ jobs:
   lint:
     if: github.event_name != 'schedule'
     uses: roquerodrigo/.github/.github/workflows/ha-lint.yml@v2
-    with:
-      package: neakasa_litterbox
 
   tests:
     if: github.event_name != 'schedule'
