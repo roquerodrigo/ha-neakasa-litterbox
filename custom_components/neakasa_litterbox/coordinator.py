@@ -138,11 +138,13 @@ def _build_snapshot(
 ) -> NeakasaDeviceSnapshot:
     """Aggregate the raw SDK payloads into a snapshot consumed by entities."""
     visit_records = [r for r in records if r.record_type == RecordType.CAT_VISIT]
+    clean_records = [r for r in records if r.record_type == RecordType.CLEAN_CYCLE]
     today_start = int(dt_util.start_of_local_day().timestamp())
 
     todays_visits = [r for r in visit_records if r.start_time >= today_start]
     visits_today = len(todays_visits)
     last_visit_at = max((r.start_time for r in visit_records), default=None)
+    last_clean_at = max((r.end_time for r in clean_records), default=None)
 
     by_cat: dict[int, list[ToiletRecord]] = defaultdict(list)
     for record in visit_records:
@@ -174,6 +176,7 @@ def _build_snapshot(
         cats=tuple(cats),
         visits_today=visits_today,
         last_visit_at=last_visit_at,
+        last_clean_at=last_clean_at,
         cat_stats=cat_stats,
     )
 

@@ -73,6 +73,7 @@ class NeakasaDeviceSnapshot:
     cats: tuple[Cat, ...]
     visits_today: int
     last_visit_at: int | None
+    last_clean_at: int | None = None
     cat_stats: Mapping[int, NeakasaCatStats] = field(default_factory=dict)
 
 
