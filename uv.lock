@@ -1017,7 +1017,7 @@ wheels = [
 
 [[package]]
 name = "ha-neakasa-litterbox"
-version = "0.0.0"
+version = "1.0.3"
 source = { virtual = "." }
 
 [package.dev-dependencies]
