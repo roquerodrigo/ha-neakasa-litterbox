@@ -14,32 +14,32 @@ permissions:
 jobs:
   lint:
     if: github.event_name != 'schedule'
-    uses: roquerodrigo/.github/.github/workflows/ha-lint.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-lint.yml@v2
     with:
       package: neakasa_litterbox
 
   tests:
     if: github.event_name != 'schedule'
     needs: lint
-    uses: roquerodrigo/.github/.github/workflows/ha-tests.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-tests.yml@v2
 
   validate:
     if: github.event_name != 'schedule'
     needs: lint
-    uses: roquerodrigo/.github/.github/workflows/ha-validate.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-validate.yml@v2
 
   codeql:
     permissions:
       actions: read
       contents: read
       security-events: write
-    uses: roquerodrigo/.github/.github/workflows/ha-codeql.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-codeql.yml@v2
 
   auto-assign:
     if: github.event_name == 'pull_request' && github.event.action == 'opened'
     permissions:
       pull-requests: write
-    uses: roquerodrigo/.github/.github/workflows/ha-auto-assign.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-auto-assign.yml@v2
     secrets: inherit
 
   update-pr-branch:
@@ -48,7 +48,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: roquerodrigo/.github/.github/workflows/ha-update-pr-branch.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-update-pr-branch.yml@v2
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -56,5 +56,5 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: roquerodrigo/.github/.github/workflows/ha-release.yml@v1
+    uses: roquerodrigo/.github/.github/workflows/ha-release.yml@v2
     secrets: inherit

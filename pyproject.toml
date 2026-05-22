@@ -1,0 +1,100 @@
+[project]
+# This repo is a Home Assistant custom integration delivered as
+# ``custom_components/neakasa_litterbox/``, not a pip-installable
+# package. The ``[project]`` block here exists so uv recognises the
+# directory as a managed project; ``[tool.uv] package = false`` keeps
+# uv from trying to build/install it.
+name = "ha-neakasa-litterbox"
+version = "0.0.0"
+description = "Home Assistant integration for Neakasa M1 self-cleaning litter box"
+requires-python = ">=3.14.2"
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "homeassistant==2026.5.3",
+    "neakasa-litterbox-sdk==0.1.3",
+    "pre-commit==4.6.0",
+    "pytest==9.0.3",
+    "pytest-asyncio==1.3.0",
+    "pytest-cov==7.1.0",
+    "pytest-homeassistant-custom-component==0.13.332",
+]
+lint = [
+    "ruff==0.15.14",
+    "mypy==2.1.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = [
+    "--cov=custom_components/neakasa_litterbox",
+    "--cov-report=term-missing",
+    "--cov-fail-under=95",
+]
+
+[tool.mypy]
+python_version = "3.14"
+files = ["custom_components/neakasa_litterbox"]
+ignore_missing_imports = true
+follow_imports = "silent"
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# Ruff config mirrors Home Assistant core's pyproject.toml.
+[tool.ruff]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
+    "D203",    # no-blank-line-before-class (incompatible with formatter)
+    "D212",    # multi-line-summary-first-line (incompatible with formatter)
+    "COM812",  # incompatible with formatter
+    "ISC001",  # incompatible with formatter
+]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
+
+[tool.ruff.lint.per-file-ignores]
+"custom_components/neakasa_litterbox/**" = [
+    "TID252",  # parent-package relative imports are the project convention within the integration package
+]
+"tests/**" = [
+    "S101",     # assert is normal in pytest
+    "S105",     # hardcoded-password-string is fine for fake test credentials
+    "S106",     # hardcoded-password-func-arg is fine for fake test credentials
+    "D",        # no docstrings required in tests
+    "ANN",      # no type annotations required in tests
+    "ARG001",   # fixtures are used implicitly by pytest
+    "PLC0415",  # local imports inside fixtures are intentional
+    "SLF001",   # testing private HA attrs and internal methods is intentional
+    "PLR2004",  # magic numbers in test assertions are fine
+    "PLR0913",  # parametrized tests legitimately accept many fixtures
+    "EM101",    # short exception messages are fine in tests
+    "TRY003",   # short exception messages are fine in tests
+    "FBT003",   # asserting on bool positional args mirrors the SDK contract
+]
