@@ -14,7 +14,7 @@ from .coordinator import NeakasaDataUpdateCoordinator, scan_interval_from_option
 from .data import NeakasaData
 from .exceptions import (
     NeakasaApiClientAuthenticationError,
-    NeakasaApiClientCommunicationError,
+    NeakasaApiClientError,
 )
 from .push import NeakasaPushClient
 
@@ -48,7 +48,7 @@ async def async_setup_entry(
     except NeakasaApiClientAuthenticationError as exc:
         await client.async_close()
         raise ConfigEntryAuthFailed(str(exc)) from exc
-    except NeakasaApiClientCommunicationError as exc:
+    except NeakasaApiClientError as exc:
         await client.async_close()
         raise ConfigEntryNotReady(str(exc)) from exc
 
