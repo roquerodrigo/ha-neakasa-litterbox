@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.3...v1.0.4) (2026-05-24)
+
+
+### Bug Fixes
+
+* **setup:** catch all non-auth errors as ConfigEntryNotReady ([3df3dfa](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/3df3dfa53c5128c56e4ef37b4fab183b7a6a6ec5))
+* **setup:** catch all non-auth errors as ConfigEntryNotReady ([cc3d52b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/cc3d52b570fe9c4700b8fc98574656926ab6f7ea))
+
 ## [1.0.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.2...v1.0.3) (2026-05-22)
 
 
