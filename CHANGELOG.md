@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.5](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.4...v1.0.5) (2026-05-25)
+
+
+### Documentation
+
+* fix CI badge and drop license badge ([028bed0](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/028bed0134eb66f65bf4283ccb861c7a7ce32923))
+* fix CI badge and drop license badge ([eb5748b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/eb5748b437ae9389750d3a693b8fe23f30d2c973))
+
 ## [1.0.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.3...v1.0.4) (2026-05-24)
 
 
