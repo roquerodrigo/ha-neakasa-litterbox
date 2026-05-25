@@ -1,9 +1,6 @@
 # Neakasa Litterbox for Home Assistant
 
-[![HACS Validate](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/validate.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/validate.yml)
-[![Lint](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/lint.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/codeql.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/codeql.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
 Home Assistant integration for the [Neakasa M1](https://www.neakasa.com/) self-cleaning litter box. Talks to the Neakasa cloud through the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/), so it works without LAN-side setup: one config entry per account exposes every litter box bound to it, plus a sub-device per cat profile registered in the Neakasa app.
