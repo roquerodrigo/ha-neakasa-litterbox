@@ -1017,7 +1017,7 @@ wheels = [
 
 [[package]]
 name = "ha-neakasa-litterbox"
-version = "1.0.4"
+version = "1.0.5"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -1040,7 +1040,7 @@ lint = [
 [package.metadata.requires-dev]
 dev = [
     { name = "homeassistant", specifier = "==2026.5.3" },
-    { name = "neakasa-litterbox-sdk", specifier = "==0.1.4" },
+    { name = "neakasa-litterbox-sdk", specifier = "==0.1.5" },
     { name = "pre-commit", specifier = "==4.6.0" },
     { name = "pytest", specifier = "==9.0.3" },
     { name = "pytest-asyncio", specifier = "==1.3.0" },
@@ -1527,16 +1527,16 @@ wheels = [
 
 [[package]]
 name = "neakasa-litterbox-sdk"
-version = "0.1.4"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "aiomqtt" },
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/75/5a/f13c31686a17e2ee78429e0545e7dc8daaafc98ef07501f5b32224a882f8/neakasa_litterbox_sdk-0.1.4.tar.gz", hash = "sha256:9bfd964940b6b05590a1cb7855380976fff3939e6eed2b2234c72ad1109d8b90", size = 152338, upload-time = "2026-05-24T00:04:55.809Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/3f/1cb1f4ae9003ba4315aa0c054199a28203757f6e749641996ff216d6e137/neakasa_litterbox_sdk-0.1.5.tar.gz", hash = "sha256:380ce1dfb126824f1b8e478c14632c2dfff7a7cd3c0a4963a3d60afc42e52755", size = 152510, upload-time = "2026-05-25T12:51:05.545Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/60/b6/a2d29f150b03c3d51c76f972df3c902fdc10eeb089d67aa41f629ccfd08d/neakasa_litterbox_sdk-0.1.4-py3-none-any.whl", hash = "sha256:b2537df58cf3e808a3be2ba01c546e0e51171438411e00015669b7ded788dcd5", size = 56337, upload-time = "2026-05-24T00:04:54.544Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/62/03285473309cae9984b220b7a247ef164312ae726dd7ae227a587f216c21/neakasa_litterbox_sdk-0.1.5-py3-none-any.whl", hash = "sha256:91d9638659b669aaf180dcc6419d69f00a7e55ba74d72d4067d8490b26a37d33", size = 56417, upload-time = "2026-05-25T12:51:04.416Z" },
 ]
 
 [[package]]
