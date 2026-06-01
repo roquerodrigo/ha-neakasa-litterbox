@@ -81,7 +81,13 @@ def test_operating_state_maps_to_option(sample_device, sample_status, sample_cat
     s = NeakasaOperatingStateSensor(_coord_with(snap), sample_device.iot_id)
     assert s.native_value == "cleaning"
     assert s.unique_id == f"{sample_device.iot_id}_operating_state"
-    assert set(s.options) == {"idle", "cleaning", "restoring", "leveling"}
+    assert set(s.options) == {
+        "idle",
+        "cleaning",
+        "restoring",
+        "leveling",
+        "cat_appears",
+    }
 
 
 def test_operating_state_unknown_becomes_none(sample_device, sample_status, sample_cat):

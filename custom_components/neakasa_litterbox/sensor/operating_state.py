@@ -15,6 +15,7 @@ _STATE_OPTIONS: list[str] = [
     OperatingState.CLEANING.name.lower(),
     OperatingState.RESTORING.name.lower(),
     OperatingState.LEVELING.name.lower(),
+    OperatingState.CAT_APPEARS.name.lower(),
 ]
 
 

@@ -85,7 +85,8 @@
                     "idle": "Idle",
                     "cleaning": "Cleaning",
                     "restoring": "Restoring",
-                    "leveling": "Leveling"
+                    "leveling": "Leveling",
+                    "cat_appears": "Cat appears"
                 }
             },
             "visits_today": {"name": "Visits today"}

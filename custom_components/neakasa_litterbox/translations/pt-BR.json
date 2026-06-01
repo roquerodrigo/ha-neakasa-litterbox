@@ -85,7 +85,8 @@
                     "idle": "Ocioso",
                     "cleaning": "Limpando",
                     "restoring": "Restaurando",
-                    "leveling": "Nivelando"
+                    "leveling": "Nivelando",
+                    "cat_appears": "Gato Presente"
                 }
             },
             "visits_today": {"name": "Visitas hoje"}
