@@ -13,7 +13,7 @@
 ## Test plan
 
 - [ ] `uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/neakasa_litterbox` pass (ruff + mypy)
-- [ ] `pytest` passes with the 95 % coverage gate
+- [ ] `pytest` passes with the 90 % coverage gate
 - [ ] All translation locales updated (if user-facing strings changed)
 
 ## Checklist
