@@ -108,8 +108,10 @@ Use **⚙ Configure → Download diagnostics** to get a redacted dump (email and
 ```bash
 scripts/setup      # install requirements.txt
 scripts/develop    # start Home Assistant in debug mode with this integration loaded
-scripts/lint       # ruff format + check + mypy
-pytest             # run the test suite (95 % coverage gate enforced)
+uv run ruff format .                              # format
+uv run ruff check . --fix                         # lint (autofix)
+uv run mypy custom_components/neakasa_litterbox   # type-check
+uv run pytest                                     # run the test suite (95 % coverage gate enforced)
 ```
 
 Each script auto-detects `./.venv` and prepends it to `PATH` — no `source .venv/bin/activate` needed. For ad-hoc commands the same trick works: `.venv/bin/pytest`, `.venv/bin/ruff …`.
