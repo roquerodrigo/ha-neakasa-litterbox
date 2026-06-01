@@ -13,8 +13,10 @@ from custom_components.neakasa_litterbox.coordinator import (
     _build_snapshot,
     scan_interval_from_options,
 )
+from custom_components.neakasa_litterbox.data import NeakasaPayload
 from custom_components.neakasa_litterbox.exceptions import (
     NeakasaApiClientAuthenticationError,
+    NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
 )
 
@@ -72,6 +74,38 @@ async def test_update_data_raises_update_failed_on_api_error(hass):
     client = MagicMock()
     client.async_list_devices = AsyncMock(side_effect=NeakasaApiClientError("down"))
     coord = _make_coordinator(hass, client)
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
+
+
+async def test_update_data_keeps_last_payload_when_device_busy(
+    hass, sample_device, sample_cat, sample_record
+):
+    # Mid-cycle the cloud rejects the status readback (29003); the
+    # coordinator must hand back the previous payload, not fail.
+    client = MagicMock()
+    client.async_list_devices = AsyncMock(return_value=[sample_device])
+    client.async_get_status = AsyncMock(
+        side_effect=NeakasaApiClientDeviceBusyError("29003")
+    )
+    client.async_list_cats = AsyncMock(return_value=[sample_cat])
+    client.async_get_toilet_records = AsyncMock(return_value=[sample_record])
+    coord = _make_coordinator(hass, client)
+    previous = NeakasaPayload(devices={})
+    coord.data = previous
+    assert await coord._async_update_data() is previous
+
+
+async def test_update_data_busy_without_prior_data_raises(hass, sample_device):
+    client = MagicMock()
+    client.async_list_devices = AsyncMock(return_value=[sample_device])
+    client.async_get_status = AsyncMock(
+        side_effect=NeakasaApiClientDeviceBusyError("29003")
+    )
+    client.async_list_cats = AsyncMock(return_value=[])
+    client.async_get_toilet_records = AsyncMock(return_value=[])
+    coord = _make_coordinator(hass, client)
+    coord.data = None
     with pytest.raises(UpdateFailed):
         await coord._async_update_data()
 

@@ -21,8 +21,8 @@ async def test_setup_entry_loads_successfully(setup_integration):
 
 
 async def test_setup_entry_creates_device_entities(hass, setup_integration):
-    # 3 device sensors + 3 cat sensors = 6
-    assert len(hass.states.async_all("sensor")) == 6
+    # 4 device sensors + 3 cat sensors = 7
+    assert len(hass.states.async_all("sensor")) == 7
 
 
 async def test_setup_entry_creates_binary_sensor_entities(hass, setup_integration):

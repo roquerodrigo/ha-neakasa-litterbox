@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
+from neakasa_litterbox_sdk import OperatingState
+
 from custom_components.neakasa_litterbox.data import (
     NeakasaDeviceSnapshot,
     NeakasaPayload,
@@ -15,6 +17,9 @@ from custom_components.neakasa_litterbox.sensor.cat_visits_today import (
 )
 from custom_components.neakasa_litterbox.sensor.cat_weight import NeakasaCatWeightSensor
 from custom_components.neakasa_litterbox.sensor.last_visit import NeakasaLastVisitSensor
+from custom_components.neakasa_litterbox.sensor.operating_state import (
+    NeakasaOperatingStateSensor,
+)
 from custom_components.neakasa_litterbox.sensor.sand_percent import (
     NeakasaSandPercentSensor,
 )
@@ -65,7 +70,35 @@ def _make_snapshot(
 
 async def test_setup_entry_lists_all_sensor_states(hass, setup_integration):
     states = hass.states.async_all("sensor")
-    assert len(states) == 6
+    assert len(states) == 7
+
+
+def test_operating_state_maps_to_option(sample_device, sample_status, sample_cat):
+    import dataclasses
+
+    status = dataclasses.replace(sample_status, operating_state=OperatingState.CLEANING)
+    snap = _make_snapshot(sample_device, status, sample_cat)
+    s = NeakasaOperatingStateSensor(_coord_with(snap), sample_device.iot_id)
+    assert s.native_value == "cleaning"
+    assert s.unique_id == f"{sample_device.iot_id}_operating_state"
+    assert set(s.options) == {"idle", "cleaning", "restoring", "leveling"}
+
+
+def test_operating_state_unknown_becomes_none(sample_device, sample_status, sample_cat):
+    import dataclasses
+
+    status = dataclasses.replace(sample_status, operating_state=OperatingState.UNKNOWN)
+    snap = _make_snapshot(sample_device, status, sample_cat)
+    s = NeakasaOperatingStateSensor(_coord_with(snap), sample_device.iot_id)
+    assert s.native_value is None
+
+
+def test_operating_state_none_without_snapshot(sample_device):
+    coord = MagicMock()
+    coord.data = NeakasaPayload(devices={})
+    coord.last_update_success = True
+    s = NeakasaOperatingStateSensor(coord, sample_device.iot_id)
+    assert s.native_value is None
 
 
 def test_sand_percent_native_value(sample_device, sample_status, sample_cat):
