@@ -11,5 +11,5 @@
   "requirements": [
     "neakasa-litterbox-sdk==0.1.6"
   ],
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
