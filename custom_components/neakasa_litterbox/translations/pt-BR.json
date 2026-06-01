@@ -79,6 +79,15 @@
             "cat_weight": {"name": "Peso"},
             "last_visit": {"name": "Última visita"},
             "sand_percent": {"name": "Nível de areia"},
+            "operating_state": {
+                "name": "Status",
+                "state": {
+                    "idle": "Ocioso",
+                    "cleaning": "Limpando",
+                    "restoring": "Restaurando",
+                    "leveling": "Nivelando"
+                }
+            },
             "visits_today": {"name": "Visitas hoje"}
         },
         "switch": {

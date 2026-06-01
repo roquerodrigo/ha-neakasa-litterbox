@@ -10,6 +10,7 @@ from .cat_last_visit import NeakasaCatLastVisitSensor
 from .cat_visits_today import NeakasaCatVisitsTodaySensor
 from .cat_weight import NeakasaCatWeightSensor
 from .last_visit import NeakasaLastVisitSensor
+from .operating_state import NeakasaOperatingStateSensor
 from .sand_percent import NeakasaSandPercentSensor
 from .visits_today import NeakasaVisitsTodaySensor
 
@@ -29,6 +30,7 @@ __all__ = [
     "NeakasaCatVisitsTodaySensor",
     "NeakasaCatWeightSensor",
     "NeakasaLastVisitSensor",
+    "NeakasaOperatingStateSensor",
     "NeakasaSandPercentSensor",
     "NeakasaVisitsTodaySensor",
 ]
@@ -41,6 +43,7 @@ def _device_sensors(
     """Return the per-device sensor entities for a freshly discovered device."""
     return [
         NeakasaSandPercentSensor(coordinator, iot_id),
+        NeakasaOperatingStateSensor(coordinator, iot_id),
         NeakasaVisitsTodaySensor(coordinator, iot_id),
         NeakasaLastVisitSensor(coordinator, iot_id),
     ]

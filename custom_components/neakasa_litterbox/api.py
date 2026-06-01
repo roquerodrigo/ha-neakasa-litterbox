@@ -20,8 +20,14 @@ from neakasa_litterbox_sdk import (
 from .exceptions import (
     NeakasaApiClientAuthenticationError,
     NeakasaApiClientCommunicationError,
+    NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
 )
+
+# The cloud rejects a property readback with this code while the box is
+# mid-cycle (cleaning/restoring/leveling). It's expected and transient,
+# so it gets its own error type the coordinator can keep-last on.
+_DEVICE_BUSY_CODE = 29003
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -45,7 +51,11 @@ def _translate_errors() -> Iterator[None]:
         raise NeakasaApiClientAuthenticationError(str(exc)) from exc
     except TransportError as exc:
         raise NeakasaApiClientCommunicationError(str(exc)) from exc
-    except (ApiError, NeakasaError) as exc:
+    except ApiError as exc:
+        if exc.code == _DEVICE_BUSY_CODE:
+            raise NeakasaApiClientDeviceBusyError(str(exc)) from exc
+        raise NeakasaApiClientError(str(exc)) from exc
+    except NeakasaError as exc:
         raise NeakasaApiClientError(str(exc)) from exc
 
 

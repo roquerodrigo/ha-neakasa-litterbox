@@ -10,6 +10,7 @@ from neakasa_litterbox_sdk import (
     Device,
     DeviceRole,
     DeviceStatus,
+    OperatingState,
     RecordType,
     ToiletRecord,
 )
@@ -45,6 +46,7 @@ def sample_status() -> DeviceStatus:
         cat_stay_seconds=0,
         needs_cleaning=False,
         bucket_full=False,
+        operating_state=OperatingState.IDLE,
         last_sand_added="2026-05-19 10:00:00",
         cleaning_enabled=True,
         auto_level=True,

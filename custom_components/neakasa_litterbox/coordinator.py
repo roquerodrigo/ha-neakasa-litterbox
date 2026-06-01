@@ -28,6 +28,7 @@ from .data import (
 from .exceptions import (
     NeakasaApiClientAuthenticationError,
     NeakasaApiClientCommunicationError,
+    NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
 )
 
@@ -89,6 +90,17 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
                 )
             except NeakasaApiClientAuthenticationError as exc:
                 raise ConfigEntryAuthFailed(str(exc)) from exc
+            except NeakasaApiClientDeviceBusyError as exc:
+                # Device is mid-cycle; the cloud refuses the readback. Keep
+                # the last snapshot available — MQTT pushes overlay the live
+                # operating_state — instead of flapping entities to
+                # unavailable. First-ever poll has nothing to fall back on.
+                if self.data is not None:
+                    LOGGER.debug(
+                        "Device busy mid-cycle; keeping last snapshot (%s)", exc
+                    )
+                    return self.data
+                raise UpdateFailed(str(exc)) from exc
             except NeakasaApiClientCommunicationError as exc:
                 last_comm_error = exc
                 if attempt + 1 < _TRANSIENT_RETRY_ATTEMPTS:

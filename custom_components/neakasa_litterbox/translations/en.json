@@ -79,6 +79,15 @@
             "cat_weight": {"name": "Weight"},
             "last_visit": {"name": "Last visit"},
             "sand_percent": {"name": "Sand level"},
+            "operating_state": {
+                "name": "Status",
+                "state": {
+                    "idle": "Idle",
+                    "cleaning": "Cleaning",
+                    "restoring": "Restoring",
+                    "leveling": "Leveling"
+                }
+            },
             "visits_today": {"name": "Visits today"}
         },
         "switch": {
