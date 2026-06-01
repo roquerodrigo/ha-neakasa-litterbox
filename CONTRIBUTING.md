@@ -15,7 +15,7 @@ Pull requests are the best way to propose changes to the codebase.
 
 1. Fork the repo and create your branch from `main`.
 2. If you've changed something, update the documentation.
-3. Make sure your code lints (using `scripts/lint`).
+3. Make sure your code lints (`uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/neakasa_litterbox`).
 4. Test your contribution.
 5. Issue that pull request!
 
@@ -42,7 +42,7 @@ Report a bug by [opening a new issue](../../issues/new/choose); it's that easy!
 
 ## Use a Consistent Coding Style
 
-The project uses [ruff](https://docs.astral.sh/ruff/) (config in `.ruff.toml`). Run `scripts/lint` before sending a PR.
+The project uses [ruff](https://docs.astral.sh/ruff/) (config in `pyproject.toml`). Run `uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/neakasa_litterbox` before sending a PR.
 
 ## Test your code modification
 

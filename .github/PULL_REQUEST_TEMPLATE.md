@@ -12,7 +12,7 @@
 
 ## Test plan
 
-- [ ] `scripts/lint` passes (ruff + mypy)
+- [ ] `uv run ruff format .`, `uv run ruff check . --fix` and `uv run mypy custom_components/neakasa_litterbox` pass (ruff + mypy)
 - [ ] `pytest` passes with the 95 % coverage gate
 - [ ] All translation locales updated (if user-facing strings changed)
 
