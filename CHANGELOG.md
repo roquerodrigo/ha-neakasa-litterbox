@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.1.0...v1.2.0) (2026-06-01)
+
+
+### Features
+
+* add "Cat appears" state to the Status sensor (SDK 0.1.9) ([7e58330](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/7e583303d4dce0c9614b243754cc3a0858b38be6))
+* map operating_state "cat_appears" (cat inside) in the Status sensor ([00868dd](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/00868ddee1bfdda305066855e819641f89bd7b00))
+
 ## [1.1.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.6...v1.1.0) (2026-06-01)
 
 
