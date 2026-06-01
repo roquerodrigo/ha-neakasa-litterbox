@@ -5,7 +5,7 @@
 # directory as a managed project; ``[tool.uv] package = false`` keeps
 # uv from trying to build/install it.
 name = "ha-neakasa-litterbox"
-version = "1.0.5"
+version = "1.0.6"
 description = "Home Assistant integration for Neakasa M1 self-cleaning litter box"
 requires-python = ">=3.14.2"
 
