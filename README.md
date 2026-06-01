@@ -111,7 +111,7 @@ scripts/develop    # start Home Assistant in debug mode with this integration lo
 uv run ruff format .                              # format
 uv run ruff check . --fix                         # lint (autofix)
 uv run mypy custom_components/neakasa_litterbox   # type-check
-uv run pytest                                     # run the test suite (95 % coverage gate enforced)
+uv run pytest                                     # run the test suite (90 % coverage gate enforced)
 ```
 
 Each script auto-detects `./.venv` and prepends it to `PATH` — no `source .venv/bin/activate` needed. For ad-hoc commands the same trick works: `.venv/bin/pytest`, `.venv/bin/ruff …`.

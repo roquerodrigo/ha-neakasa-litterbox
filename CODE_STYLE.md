@@ -3,7 +3,7 @@
 Style conventions for the `ha-neakasa-litterbox` project. Run
 `uv run ruff format .`, `uv run ruff check . --fix` and
 `uv run mypy custom_components/neakasa_litterbox` before committing — they must
-exit cleanly. `uv run pytest` (with the 95 % coverage gate) follows.
+exit cleanly. `uv run pytest` (with the 90 % coverage gate) follows.
 
 **Always read this file before adding or restructuring code.**
 
@@ -305,7 +305,7 @@ which `release-please` parses to bump the version and generate `CHANGELOG.md`:
   `uv run mypy custom_components/neakasa_litterbox`.
 - After every change run those lint commands and `uv run pytest`. Both gates
   mirror CI (`.github/workflows/ci.yml`).
-- Tests live in `tests/`, mirroring the production layout. The 95 % coverage
+- Tests live in `tests/`, mirroring the production layout. The 90 % coverage
   gate (`pyproject.toml`) prevents untested code from sneaking in. When a test
   exercises a state that is impossible under the new types, update or remove
   it — never weaken the type to satisfy the test.
