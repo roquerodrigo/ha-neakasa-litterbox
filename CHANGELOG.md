@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.6...v1.1.0) (2026-06-01)
+
+
+### Features
+
+* add operating-state (Status) sensor + keep entities alive mid-cycle ([b6096f5](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/b6096f53beb1c47bf3ce6b4f586583a3367e2d38))
+* add operating-state sensor + keep entities alive mid-cycle ([0fae620](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/0fae620f9dd6b25fdf3d0278895fdc8f5a5d37c4))
+
 ## [1.0.6](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.0.5...v1.0.6) (2026-06-01)
 
 
