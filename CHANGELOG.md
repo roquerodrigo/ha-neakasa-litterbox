@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.0...v1.2.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* EU login — bump neakasa-litterbox-sdk to 0.1.10 ([735a3fc](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/735a3fc1b59f568be44a5d9fcb7aac3c2da7c0bb))
+
 ## [1.2.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.1.0...v1.2.0) (2026-06-01)
 
 
