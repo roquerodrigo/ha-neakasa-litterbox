@@ -9,7 +9,7 @@
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/roquerodrigo/ha-neakasa-litterbox/issues",
   "requirements": [
-    "neakasa-litterbox-sdk==0.1.10"
+    "neakasa-litterbox-sdk==0.1.11"
   ],
   "version": "1.2.1"
 }
