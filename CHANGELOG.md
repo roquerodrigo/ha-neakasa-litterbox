@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.1...v1.2.2) (2026-06-23)
+
+
+### Bug Fixes
+
+* discover EU devices via regional Aliyun gateway (SDK 0.1.11) ([717e5b7](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/717e5b73982d32ae16bdf96957653b2648fd1fd7))
+* discover EU devices via regional Aliyun gateway (SDK 0.1.11) ([b430ff8](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/b430ff82698c98fbd9fab26696a3683eff2b2794))
+
 ## [1.2.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.0...v1.2.1) (2026-06-22)
 
 
