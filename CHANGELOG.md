@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.2...v1.2.3) (2026-07-15)
+
+
+### Bug Fixes
+
+* **deps:** bump neakasa-litterbox-sdk to 0.1.12 ([03b1516](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/03b151602eccd95bec1136b23b220a19c179d4d5))
+* **deps:** bump neakasa-litterbox-sdk to 0.1.12 ([a120c7a](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/a120c7ae6b35686c1a365d7ea2c3d461081c9832))
+
 ## [1.2.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.1...v1.2.2) (2026-06-23)
 
 
