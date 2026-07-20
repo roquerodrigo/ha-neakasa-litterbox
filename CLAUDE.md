@@ -36,20 +36,40 @@ The Home Assistant version is pinned in three places and **must be updated toget
 
 Verify the pairing on PyPI before committing: the `requires_dist` of `pytest-homeassistant-custom-component` must list the same `homeassistant==<X.Y.Z>` you pinned in `pyproject.toml`.
 
+## Bumping `neakasa-litterbox-sdk`
+
+This integration is a thin wrapper around the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/) PyPI package (companion repo `neakasa-litterbox-sdk`). The pin lives in two places that **must move together**, same failure mode as the HA version above:
+
+1. `custom_components/neakasa_litterbox/manifest.json` — `requirements: ["neakasa-litterbox-sdk==<X.Y.Z>"]` (what HA installs at runtime).
+2. `pyproject.toml` — `neakasa-litterbox-sdk==<X.Y.Z>` in `[dependency-groups] dev` (what lint/mypy/pytest resolve against).
+
+Past bumps landed as `fix(deps)`/`build(deps)` commits touching both files plus `uv.lock` in the same commit (e.g. `a120c7a`, `8eb34e9`) — copy that pattern rather than editing only one.
+
+The integration only imports from the SDK's public surface, so an SDK release is safe as long as it doesn't rename/remove these:
+
+- `api.py` — `NeakasaClient` (wrapped by `NeakasaApiClient`) and its `watch_status()` method, which returns the `StatusStream` used by `push.py`.
+- `push.py` — `StatusStream`, `StatusUpdate`, `DeviceStatus`.
+- `coordinator.py` — `Cat`, `Device`, `DeviceStatus`, `ToiletRecord`, `RecordType`.
+- `exceptions/` — `_translate_errors` in `api.py` catches the SDK's `NeakasaError`, `ApiError` (branching on its `.code`), `TransportError`, `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`. If the SDK adds/renames an exception class or changes an error code (e.g. the `29003` "device busy" code), update this mapping or the integration will surface the wrong HA exception (or none).
+
 ## Architecture
 
-The integration follows the HA `DataUpdateCoordinator` pattern:
+The integration follows the HA `DataUpdateCoordinator` pattern, plus an MQTT push channel:
 
 ```
 config_flow.py   → validates credentials and creates the ConfigEntry
-__init__.py      → instantiates ApiClient + DataUpdateCoordinator, performs the first refresh
+__init__.py      → instantiates ApiClient + DataUpdateCoordinator + PushClient, performs the first refresh
 coordinator.py   → polls every scan_interval seconds; returns the typed payload
-sensor.py        → reads coordinator.data and creates the entities
+push.py          → subscribes to the SDK's MQTT status stream, merges deltas into coordinator data in real time
+sensor/, binary_sensor/, button/, number/, switch/
+                 → one package per platform; each reads coordinator.data and creates its entities.
+                   `<platform>/__init__.py` holds async_setup_entry + dynamic device/cat discovery,
+                   one file per entity class otherwise.
 ```
 
 ### Entry typing
 
-`data.py` defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
+`data.py` defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
 ### Config flow surface
 
@@ -62,17 +82,25 @@ sensor.py        → reads coordinator.data and creates the entities
 
 ### Options flow
 
-`options_flow.py` exposes `scan_interval` (seconds; min 30, default 300). Changing it triggers `async_reload_entry`, which re-instantiates the coordinator with the new `update_interval`.
+`options_flow.py` (`NeakasaOptionsFlow`) exposes two options:
+
+- `scan_interval` (seconds; min 60, default 600) — the coordinator's polling fallback cadence.
+- `statistics_lookback_days` (days; min 1, max 30, default 7) — the coordinator's `ToiletRecord` lookback window for per-cat last-visit/visits-today sensors.
+
+Changing either triggers `async_reload_entry`, which re-instantiates the coordinator with the new `update_interval`/lookback.
+
+### Push client
+
+`push.py` (`NeakasaPushClient`) opens the SDK's `StatusStream` (MQTT, `watch_status()`) and merges each `StatusUpdate` delta into coordinator data as it arrives. A supervisor task polls the SDK's underlying dispatch task for liveness (the SDK doesn't surface disconnects on its public API) and respawns the stream with exponential backoff (5 s → up to 300 s cap) when it dies, resetting the backoff once a connection has been stable for 60 s. `async_setup_entry` starts it right after the coordinator's first refresh and registers `push.async_stop` via `entry.async_on_unload`.
 
 ### API client
 
-`api.py` exposes `NeakasaApiClient` plus the `_verify_response_or_raise` helper. Exceptions live under `exceptions/`:
+`api.py` exposes `NeakasaApiClient`, a thin async wrapper around the SDK's `NeakasaClient`. The `_translate_errors` context manager maps SDK exceptions to the integration's own hierarchy (`exceptions/`):
 
-- `NeakasaApiClientError` (base)
-- `NeakasaApiClientCommunicationError` (timeout, connection)
-- `NeakasaApiClientAuthenticationError` (401/403)
-
-`_api_wrapper` maps `TimeoutError`, `aiohttp.ClientError` and `socket.gaierror` to `CommunicationError`; any other exception becomes the base error.
+- `NeakasaApiClientError` (base) ← `NeakasaError`, or `ApiError` for any code other than the one below
+- `NeakasaApiClientCommunicationError` ← `TransportError`
+- `NeakasaApiClientAuthenticationError` ← `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`
+- `NeakasaApiClientDeviceBusyError` ← `ApiError` with code `29003` — the cloud rejects a property readback while the box is mid-cycle (cleaning/restoring/leveling); this is expected and transient, so the coordinator can keep-last on it instead of surfacing an error.
 
 ### Diagnostics
 
