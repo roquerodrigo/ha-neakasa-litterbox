@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.3...v1.2.4) (2026-07-20)
+
+
+### Documentation
+
+* update CLAUDE.md ([1e9f364](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/1e9f364066e5b64e9eb78763d1870b463e43c951))
+
 ## [1.2.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.2...v1.2.3) (2026-07-15)
 
 
