@@ -23,7 +23,7 @@ dev = [
     "pytest-homeassistant-custom-component==0.13.332",
 ]
 lint = [
-    "ruff==0.15.22",
+    "ruff==0.16.0",
     "mypy==2.3.0",
 ]
 
@@ -60,6 +60,9 @@ check_untyped_defs = false
 [tool.ruff]
 target-version = "py314"
 
+[tool.ruff.format]
+exclude = ["*.md"]  # ruff 0.16 formats Python blocks in Markdown; docs keep their own layout
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -68,6 +71,7 @@ ignore = [
     "D212",    # multi-line-summary-first-line (incompatible with formatter)
     "COM812",  # incompatible with formatter
     "ISC001",  # incompatible with formatter
+    "CPY001",  # copyright headers are not used in this project
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
@@ -94,6 +98,7 @@ max-complexity = 25
     "SLF001",   # testing private HA attrs and internal methods is intentional
     "PLR2004",  # magic numbers in test assertions are fine
     "PLR0913",  # parametrized tests legitimately accept many fixtures
+    "PLR0917",  # same, counted as positional parameters
     "EM101",    # short exception messages are fine in tests
     "TRY003",   # short exception messages are fine in tests
     "FBT003",   # asserting on bool positional args mirrors the SDK contract
