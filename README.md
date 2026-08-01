@@ -73,7 +73,7 @@ The integration keeps two channels open against the Neakasa cloud:
 - **MQTT push** (`cloud_push`): subscribes via `watch_status()` on the SDK and merges deltas into coordinator data as they arrive (sand percent, switch flips, presence flags…).
 - **Polling fallback**: every `scan_interval` seconds the coordinator re-fetches `list_devices` + `get_status` + `list_cats` + `get_toilet_records` in parallel per device, so state stays correct even if the MQTT stream drops.
 
-The MQTT client uses `tls_insecure=True` because Aliyun-fronted brokers don't always present a chain that the bundled Python OpenSSL trusts; the broker URL still uses TLS, only certificate validation is skipped on the push channel.
+The push channel verifies the broker's certificate chain and hostname. The Aliyun-fronted broker chains to a root that current trust stores no longer carry, so the SDK ships that root and trusts it alongside the system store — no validation is disabled on either channel.
 
 ## Optimistic state
 
