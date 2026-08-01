@@ -196,3 +196,4 @@ def test_watch_status_returns_sdk_stream():
     sdk.watch_status = MagicMock(return_value=sentinel)
     client = _client(sdk)
     assert client.watch_status() is sentinel
+    sdk.watch_status.assert_called_once_with()

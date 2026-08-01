@@ -54,6 +54,14 @@ async def test_start_invokes_stream_start(push_setup):
     stream.start.assert_awaited_once()
 
 
+async def test_start_keeps_sdk_tls_defaults(push_setup):
+    # Passing anything here would mean overriding the SDK's verified
+    # TLS setup for the push channel.
+    push, api, *_ = push_setup
+    await push.async_start()
+    api.watch_status.assert_called_once_with()
+
+
 async def test_start_idempotent(push_setup):
     push, _, stream, *_ = push_setup
     await push.async_start()

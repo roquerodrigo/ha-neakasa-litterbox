@@ -81,10 +81,7 @@ class NeakasaPushClient:
         """Try to open the stream once; log and continue on failure."""
         if self._stream is not None:
             return True
-        # ``tls_insecure=True`` lets the MQTT TLS handshake succeed without a
-        # locally-trusted CA bundle; the Neakasa broker still uses TLS, only
-        # certificate validation is skipped.
-        stream = self._api.watch_status(tls_insecure=True)
+        stream = self._api.watch_status()
         stream.on_change(self._handle_change)
         try:
             await stream.start()

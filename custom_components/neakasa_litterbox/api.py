@@ -183,11 +183,6 @@ class NeakasaApiClient:
         with _translate_errors():
             await self._client.set_child_lock(device_name, enabled)
 
-    def watch_status(
-        self,
-        *,
-        ca_certs: str | None = None,
-        tls_insecure: bool = False,
-    ) -> StatusStream:
+    def watch_status(self) -> StatusStream:
         """Return a fresh MQTT status stream (caller starts/stops it)."""
-        return self._client.watch_status(ca_certs=ca_certs, tls_insecure=tls_insecure)
+        return self._client.watch_status()
