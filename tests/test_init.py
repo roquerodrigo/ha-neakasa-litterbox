@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import dataclasses
 from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.neakasa_litterbox import async_remove_config_entry_device
 from custom_components.neakasa_litterbox.const import (
     DEFAULT_SCAN_INTERVAL_SECONDS,
     DOMAIN,
 )
+from custom_components.neakasa_litterbox.data import NeakasaPayload
 from custom_components.neakasa_litterbox.exceptions import (
     NeakasaApiClientAuthenticationError,
     NeakasaApiClientCommunicationError,
@@ -87,6 +91,57 @@ async def test_scan_interval_picks_up_options(
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     assert entry.runtime_data.coordinator.update_interval == timedelta(seconds=90)
+
+
+def _device(hass, identifier):
+    return dr.async_get(hass).async_get_device(identifiers={(DOMAIN, identifier)})
+
+
+def _drop_cats(entry):
+    payload = entry.runtime_data.coordinator.data
+    entry.runtime_data.coordinator.async_set_updated_data(
+        NeakasaPayload(
+            devices={
+                iot_id: dataclasses.replace(snapshot, cats=())
+                for iot_id, snapshot in payload.devices.items()
+            }
+        )
+    )
+
+
+async def test_remove_device_rejects_reported_cat(hass, setup_integration):
+    device = _device(hass, "iot-id-1-cat-42")
+    assert device is not None
+    assert not await async_remove_config_entry_device(hass, setup_integration, device)
+
+
+async def test_remove_device_rejects_reported_litter_box(hass, setup_integration):
+    device = _device(hass, "iot-id-1")
+    assert device is not None
+    assert not await async_remove_config_entry_device(hass, setup_integration, device)
+
+
+async def test_remove_device_allows_cat_dropped_by_the_cloud(hass, setup_integration):
+    device = _device(hass, "iot-id-1-cat-42")
+    _drop_cats(setup_integration)
+    await hass.async_block_till_done()
+    assert await async_remove_config_entry_device(hass, setup_integration, device)
+
+
+async def test_remove_device_still_rejects_litter_box_after_cats_go(
+    hass, setup_integration
+):
+    device = _device(hass, "iot-id-1")
+    _drop_cats(setup_integration)
+    await hass.async_block_till_done()
+    assert not await async_remove_config_entry_device(hass, setup_integration, device)
+
+
+async def test_remove_device_allows_unloaded_entry(hass, setup_integration):
+    device = _device(hass, "iot-id-1")
+    await hass.config_entries.async_unload(setup_integration.entry_id)
+    await hass.async_block_till_done()
+    assert await async_remove_config_entry_device(hass, setup_integration, device)
 
 
 async def test_setup_entry_translates_auth_error(hass, enable_custom_integrations):

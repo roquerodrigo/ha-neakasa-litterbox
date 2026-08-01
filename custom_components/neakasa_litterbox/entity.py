@@ -11,6 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import ATTRIBUTION, DOMAIN, MANUFACTURER
 from .coordinator import NeakasaDataUpdateCoordinator
 from .data import NeakasaPayload
+from .device_identity import cat_identifier
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -145,7 +146,7 @@ class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
         cat = self.cat
         name = cat.name if cat is not None else str(self._cat_id)
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self._iot_id}-cat-{self._cat_id}")},
+            identifiers={(DOMAIN, cat_identifier(self._iot_id, self._cat_id))},
             via_device=(DOMAIN, self._iot_id),
             name=name,
             manufacturer=MANUFACTURER,
