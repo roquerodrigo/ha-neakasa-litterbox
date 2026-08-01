@@ -48,6 +48,12 @@ Per cat (sub-device of the litter box):
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |
 
+## Removing devices
+
+A cat deleted in the Neakasa app — or a litter box unpaired from the account — keeps its device in Home Assistant until you remove it. Once the cloud stops reporting it, **Settings → Devices → the device → Delete** takes it away along with its entities.
+
+Devices the cloud still reports are protected: deleting one would drop its entities until the next reload, so Home Assistant refuses with *Failed to remove device entry, rejected by integration*. Delete the cat in the app first, then remove the device here.
+
 ## Setup
 
 1. Install via HACS (recommended) or copy `custom_components/neakasa_litterbox/` into your config.
