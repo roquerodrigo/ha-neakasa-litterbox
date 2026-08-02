@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.1...v1.3.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* recover automatically when a cloud request times out ([3e49d9c](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/3e49d9cb23ea7c38049f0a08867d80025c702021))
+
 ## [1.3.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.0...v1.3.1) (2026-08-02)
 
 
