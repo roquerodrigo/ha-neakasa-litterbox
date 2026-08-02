@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.0...v1.3.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* sign in again when the cloud drops the session ([f7dc675](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/f7dc675108c7d0a649cbb3545d0e21aecd879fab))
+
 ## [1.3.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.2.4...v1.3.0) (2026-08-01)
 
 
