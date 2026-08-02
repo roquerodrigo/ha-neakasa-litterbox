@@ -63,6 +63,8 @@ Devices the cloud still reports are protected: deleting one would drop its entit
 
 If the credentials become invalid later, Home Assistant raises the standard reauth dialog. To change the region or rotate the password without removing the entry, use the integration's three-dot menu → **Reconfigure**.
 
+The cloud allows one session per account and drops the previous one whenever the account signs in somewhere else — opening the Neakasa app on your phone does exactly that. The integration signs in again with the stored credentials and carries on; only a credential the cloud rejects reaches the reauth dialog.
+
 ## Options
 
 Via the integration's **⚙ Configure** dialog:
@@ -105,7 +107,7 @@ Use **⚙ Configure → Download diagnostics** to get a redacted dump (email and
 
 ## Known limitations
 
-- The Neakasa cloud occasionally drops the MQTT dispatcher (`Disconnected during message iteration`). The integration currently does **not** auto-reconnect; restart the entry to bring push back. Polling fallback keeps working in the meantime.
+- The Neakasa cloud occasionally drops the MQTT dispatcher (`Disconnected during message iteration`). A supervisor reopens the stream with exponential backoff (5 s up to 5 min) and refreshes the coordinator once it is back; polling keeps the entities correct in the meantime.
 - The Neakasa SDK does not expose a way to disable HTTPS verification, so the integration assumes the local Python install can validate `*.neakasa.com` (most distributions can; on macOS Python builds the helper script auto-injects `certifi`'s bundle — see [`scripts/develop`](./scripts/develop)).
 - Firmware version is surfaced as **device metadata** (visible on the device card) rather than as a dedicated sensor.
 

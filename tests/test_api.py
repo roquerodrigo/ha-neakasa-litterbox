@@ -17,6 +17,7 @@ from custom_components.neakasa_litterbox.exceptions import (
     NeakasaApiClientAuthenticationError,
     NeakasaApiClientCommunicationError,
     NeakasaApiClientError,
+    NeakasaApiClientSessionExpiredError,
 )
 
 
@@ -36,12 +37,27 @@ def test_translate_invalid_credentials_to_auth_error():
         raise InvalidCredentialsError("nope", code=401)
 
 
-def test_translate_session_expired_to_auth_error():
+def test_translate_session_expired_to_session_expired_error():
     with (
-        pytest.raises(NeakasaApiClientAuthenticationError),
+        pytest.raises(NeakasaApiClientSessionExpiredError),
         _translate_errors(),
     ):
-        raise SessionExpiredError("expired", code=401)
+        raise SessionExpiredError("expired", code=1007)
+
+
+def test_session_expired_error_is_an_auth_error():
+    assert issubclass(
+        NeakasaApiClientSessionExpiredError, NeakasaApiClientAuthenticationError
+    )
+
+
+def test_translate_invalid_credentials_is_not_session_expired():
+    with (
+        pytest.raises(NeakasaApiClientAuthenticationError) as raised,
+        _translate_errors(),
+    ):
+        raise InvalidCredentialsError("nope", code=401)
+    assert not isinstance(raised.value, NeakasaApiClientSessionExpiredError)
 
 
 def test_translate_auth_error_to_auth_error():
