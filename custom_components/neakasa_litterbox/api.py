@@ -22,6 +22,7 @@ from .exceptions import (
     NeakasaApiClientCommunicationError,
     NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
+    NeakasaApiClientSessionExpiredError,
 )
 
 # The cloud rejects a property readback with this code while the box is
@@ -47,7 +48,9 @@ def _translate_errors() -> Iterator[None]:
     """Map SDK exceptions to the integration's hierarchy."""
     try:
         yield
-    except (InvalidCredentialsError, SessionExpiredError, AuthenticationError) as exc:
+    except SessionExpiredError as exc:
+        raise NeakasaApiClientSessionExpiredError(str(exc)) from exc
+    except (InvalidCredentialsError, AuthenticationError) as exc:
         raise NeakasaApiClientAuthenticationError(str(exc)) from exc
     except TransportError as exc:
         raise NeakasaApiClientCommunicationError(str(exc)) from exc

@@ -30,6 +30,7 @@ from .exceptions import (
     NeakasaApiClientCommunicationError,
     NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
+    NeakasaApiClientSessionExpiredError,
 )
 
 if TYPE_CHECKING:
@@ -78,16 +79,27 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
         Transient transport errors (DNS hiccups, TLS handshake retries
         against the cloud) get one or two short retries instead of
         immediately marking entities unavailable until the next 10-min
-        scan window.
+        scan window. An expired session buys one silent sign-in: the
+        cloud drops it whenever the account signs in elsewhere (the
+        mobile app, another client) and the stored credentials are still
+        good, so a reauth flow would only ask for what we already have.
         """
         client = self.config_entry.runtime_data.client
-        last_comm_error: NeakasaApiClientCommunicationError | None = None
-        for attempt in range(_TRANSIENT_RETRY_ATTEMPTS):
+        transport_failures = 0
+        signed_in_again = False
+        while True:
             try:
                 devices = await client.async_list_devices()
                 snapshots = await asyncio.gather(
                     *(self._fetch_device_snapshot(device) for device in devices),
                 )
+            except NeakasaApiClientSessionExpiredError as exc:
+                if signed_in_again:
+                    raise ConfigEntryAuthFailed(str(exc)) from exc
+                signed_in_again = True
+                LOGGER.debug("Cloud session expired (%s); signing in again", exc)
+                await self._async_sign_in_again()
+                continue
             except NeakasaApiClientAuthenticationError as exc:
                 raise ConfigEntryAuthFailed(str(exc)) from exc
             except NeakasaApiClientDeviceBusyError as exc:
@@ -102,26 +114,34 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
                     return self.data
                 raise UpdateFailed(str(exc)) from exc
             except NeakasaApiClientCommunicationError as exc:
-                last_comm_error = exc
-                if attempt + 1 < _TRANSIENT_RETRY_ATTEMPTS:
-                    delay = _TRANSIENT_RETRY_BASE_DELAY * (2**attempt)
-                    LOGGER.debug(
-                        "Transient comms error on attempt %d/%d (%s); retry in %.1fs",
-                        attempt + 1,
-                        _TRANSIENT_RETRY_ATTEMPTS,
-                        exc,
-                        delay,
-                    )
-                    await asyncio.sleep(delay)
-                    continue
-                raise UpdateFailed(str(exc)) from exc
+                transport_failures += 1
+                if transport_failures >= _TRANSIENT_RETRY_ATTEMPTS:
+                    raise UpdateFailed(str(exc)) from exc
+                delay = _TRANSIENT_RETRY_BASE_DELAY * (2 ** (transport_failures - 1))
+                LOGGER.debug(
+                    "Transient comms error on attempt %d/%d (%s); retry in %.1fs",
+                    transport_failures,
+                    _TRANSIENT_RETRY_ATTEMPTS,
+                    exc,
+                    delay,
+                )
+                await asyncio.sleep(delay)
+                continue
             except NeakasaApiClientError as exc:
                 raise UpdateFailed(str(exc)) from exc
             return NeakasaPayload(
                 devices={snap.device["iot_id"]: snap for snap in snapshots},
             )
-        # Loop only exits via return or raise; this is unreachable but keeps mypy happy.
-        raise UpdateFailed(str(last_comm_error))
+
+    async def _async_sign_in_again(self) -> None:
+        """Re-establish the cloud session with the credentials on the entry."""
+        client = self.config_entry.runtime_data.client
+        try:
+            await client.async_login()
+        except NeakasaApiClientAuthenticationError as exc:
+            raise ConfigEntryAuthFailed(str(exc)) from exc
+        except NeakasaApiClientError as exc:
+            raise UpdateFailed(str(exc)) from exc
 
     async def _fetch_device_snapshot(
         self,
