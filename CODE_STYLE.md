@@ -263,11 +263,12 @@ most recent GitHub releases to users, so keep the changelog grep-able.
 ## Pre-commit hooks
 
 `pre-commit` is a dev dependency (`pyproject.toml`) and `.pre-commit-config.yaml`
-mirrors the lint commands (ruff format, ruff check, mypy). Install once per
-clone:
+mirrors the lint commands (ruff format, ruff check, mypy) through local
+`uv run` hooks, so the hook always runs the exact tool versions pinned in
+`pyproject.toml`/`uv.lock`. Install once per clone:
 
 ```bash
-pre-commit install
+uv run pre-commit install
 ```
 
 The hook runs the same gates as CI on every commit. Skip it only on

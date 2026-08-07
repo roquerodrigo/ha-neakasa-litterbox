@@ -114,7 +114,7 @@ Use **⚙ Configure → Download diagnostics** to get a redacted dump (email and
 ## Development
 
 ```bash
-scripts/setup      # install requirements.txt
+scripts/setup      # uv sync --group dev --group lint
 scripts/develop    # start Home Assistant in debug mode with this integration loaded
 uv run ruff format .                              # format
 uv run ruff check . --fix                         # lint (autofix)
