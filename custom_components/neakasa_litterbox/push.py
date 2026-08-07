@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
     from .api import NeakasaApiClient
     from .coordinator import NeakasaDataUpdateCoordinator
+    from .data import NeakasaConfigEntry
 
 
 _STATUS_FIELDS: frozenset[str] = frozenset(
@@ -45,11 +46,13 @@ class NeakasaPushClient:
     def __init__(
         self,
         hass: HomeAssistant,
+        entry: NeakasaConfigEntry,
         api: NeakasaApiClient,
         coordinator: NeakasaDataUpdateCoordinator,
     ) -> None:
         """Bind the push client to the active coordinator and SDK client."""
         self._hass = hass
+        self._entry = entry
         self._api = api
         self._coordinator = coordinator
         self._stream: StatusStream | None = None
@@ -62,9 +65,12 @@ class NeakasaPushClient:
             return
         self._stopping = False
         # First attempt happens inline so a setup-time failure surfaces
-        # before we hand off to the background supervisor.
+        # before we hand off to the background supervisor. The supervisor
+        # runs as an entry background task so Home Assistant cancels it
+        # with the entry instead of leaving an orphaned asyncio task.
         await self._connect_once()
-        self._supervisor = asyncio.create_task(
+        self._supervisor = self._entry.async_create_background_task(
+            self._hass,
             self._supervise(),
             name="neakasa_litterbox.push_supervisor",
         )

@@ -4,7 +4,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from neakasa_litterbox_sdk import NeakasaError, StatusUpdate
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.neakasa_litterbox.const import DOMAIN
 from custom_components.neakasa_litterbox.data import (
     NeakasaDeviceSnapshot,
     NeakasaPayload,
@@ -42,8 +44,10 @@ async def push_setup(hass, sample_device, sample_status, sample_cat):
     stream.stop = AsyncMock()
     api = MagicMock()
     api.watch_status = MagicMock(return_value=stream)
-    push = NeakasaPushClient(hass=hass, api=api, coordinator=coordinator)
-    yield push, api, stream, coordinator, snap
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    push = NeakasaPushClient(hass=hass, entry=entry, api=api, coordinator=coordinator)
+    yield push, api, stream, coordinator, snap, entry
     # Cancel the reconnect supervisor so it doesn't outlive the test.
     await push.async_stop()
 
@@ -60,6 +64,22 @@ async def test_start_keeps_sdk_tls_defaults(push_setup):
     push, api, *_ = push_setup
     await push.async_start()
     api.watch_status.assert_called_once_with()
+
+
+async def test_start_registers_supervisor_as_entry_background_task(push_setup):
+    push, _, _, _, _, entry = push_setup
+    await push.async_start()
+    assert push._supervisor is not None
+    assert push._supervisor in entry._background_tasks
+
+
+async def test_stop_cancels_supervisor(push_setup):
+    push, *_ = push_setup
+    await push.async_start()
+    supervisor = push._supervisor
+    await push.async_stop()
+    assert push._supervisor is None
+    assert supervisor.cancelled() or supervisor.cancelling()
 
 
 async def test_start_idempotent(push_setup):
@@ -98,7 +118,7 @@ async def test_stop_swallows_sdk_error(push_setup):
 
 
 async def test_handle_change_updates_status(push_setup):
-    push, _, _, coordinator, snap = push_setup
+    push, _, _, coordinator, snap, _ = push_setup
     update = StatusUpdate(
         device_name=snap.device["device_name"],
         changes={"sand_percent": 25, "silent_mode": True, "unknown_field": 1},
@@ -112,7 +132,7 @@ async def test_handle_change_updates_status(push_setup):
 
 
 async def test_handle_change_ignored_without_payload(push_setup):
-    push, _, _, coordinator, _ = push_setup
+    push, _, _, coordinator, _, _ = push_setup
     coordinator.data = None
     push._handle_change(
         StatusUpdate(device_name="dn-1", changes={"sand_percent": 10}),
@@ -121,7 +141,7 @@ async def test_handle_change_ignored_without_payload(push_setup):
 
 
 async def test_handle_change_ignored_for_unknown_device(push_setup):
-    push, _, _, coordinator, _ = push_setup
+    push, _, _, coordinator, _, _ = push_setup
     push._handle_change(
         StatusUpdate(device_name="other", changes={"sand_percent": 5}),
     )
@@ -129,7 +149,7 @@ async def test_handle_change_ignored_for_unknown_device(push_setup):
 
 
 async def test_handle_change_ignored_with_no_known_keys(push_setup):
-    push, _, _, coordinator, snap = push_setup
+    push, _, _, coordinator, snap, _ = push_setup
     push._handle_change(
         StatusUpdate(
             device_name=snap.device["device_name"],

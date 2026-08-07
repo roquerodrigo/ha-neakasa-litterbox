@@ -52,12 +52,18 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
 
     config_entry: NeakasaConfigEntry
 
-    def __init__(self, hass: HomeAssistant, scan_interval: timedelta) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: NeakasaConfigEntry,
+        scan_interval: timedelta,
+    ) -> None:
         """Initialize."""
         super().__init__(
             hass=hass,
             logger=LOGGER,
             name=DOMAIN,
+            config_entry=entry,
             update_interval=scan_interval,
             always_update=False,
         )

@@ -47,20 +47,32 @@ async def async_setup_entry(
         password=config["password"],
         region=config["region"],
     )
+    # Registered before any await so the SDK session is closed even when
+    # setup fails later (Home Assistant runs the on_unload callbacks on a
+    # failed setup too); otherwise every ConfigEntryNotReady retry would
+    # leak one aiohttp session.
+    entry.async_on_unload(client.async_close)
     try:
         await client.async_login()
     except NeakasaApiClientAuthenticationError as exc:
-        await client.async_close()
         raise ConfigEntryAuthFailed(str(exc)) from exc
     except NeakasaApiClientError as exc:
-        await client.async_close()
         raise ConfigEntryNotReady(str(exc)) from exc
 
     scan_interval = timedelta(
         seconds=scan_interval_from_options(dict(entry.options)),
     )
-    coordinator = NeakasaDataUpdateCoordinator(hass=hass, scan_interval=scan_interval)
-    push = NeakasaPushClient(hass=hass, api=client, coordinator=coordinator)
+    coordinator = NeakasaDataUpdateCoordinator(
+        hass=hass,
+        entry=entry,
+        scan_interval=scan_interval,
+    )
+    push = NeakasaPushClient(
+        hass=hass,
+        entry=entry,
+        api=client,
+        coordinator=coordinator,
+    )
 
     entry.runtime_data = NeakasaData(
         client=client,
@@ -72,7 +84,6 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
     await push.async_start()
     entry.async_on_unload(push.async_stop)
-    entry.async_on_unload(client.async_close)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))

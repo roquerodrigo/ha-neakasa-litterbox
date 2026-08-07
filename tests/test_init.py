@@ -159,6 +159,7 @@ async def test_setup_entry_translates_auth_error(hass, enable_custom_integration
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
     assert entry.state == ConfigEntryState.SETUP_ERROR
+    mock_class.return_value.async_close.assert_awaited_once()
 
 
 async def test_setup_entry_translates_communication_error(
@@ -178,3 +179,30 @@ async def test_setup_entry_translates_communication_error(
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
     assert entry.state == ConfigEntryState.SETUP_RETRY
+    mock_class.return_value.async_close.assert_awaited_once()
+
+
+async def test_setup_entry_closes_client_when_first_refresh_fails(
+    hass, mock_api_client, enable_custom_integrations
+):
+    mock_api_client.async_list_devices = AsyncMock(
+        side_effect=NeakasaApiClientCommunicationError("down")
+    )
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"username": "u@x", "password": "p", "region": "us"},
+        unique_id="ux3",
+    )
+    entry.add_to_hass(hass)
+    with patch("custom_components.neakasa_litterbox.coordinator.asyncio.sleep"):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+    assert entry.state == ConfigEntryState.SETUP_RETRY
+    mock_api_client.async_close.assert_awaited_once()
+
+
+async def test_unload_entry_closes_client(hass, setup_integration):
+    client = setup_integration.runtime_data.client
+    assert await hass.config_entries.async_unload(setup_integration.entry_id)
+    await hass.async_block_till_done()
+    client.async_close.assert_awaited_once()

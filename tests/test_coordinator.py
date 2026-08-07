@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.neakasa_litterbox.const import DOMAIN
 from custom_components.neakasa_litterbox.coordinator import (
@@ -22,28 +23,36 @@ from custom_components.neakasa_litterbox.exceptions import (
 )
 
 
+def _fake_entry(client):
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.runtime_data = type("D", (), {"client": client})()
+    return entry
+
+
 def _make_coordinator(hass, client):
-    coord = NeakasaDataUpdateCoordinator(
-        hass=hass, scan_interval=timedelta(seconds=300)
+    return NeakasaDataUpdateCoordinator(
+        hass=hass, entry=_fake_entry(client), scan_interval=timedelta(seconds=300)
     )
-    runtime_data = type("D", (), {"client": client})()
-    entry = type(
-        "E", (), {"entry_id": "eid", "runtime_data": runtime_data, "options": {}}
-    )()
-    coord.config_entry = entry
-    return coord
 
 
 def test_init_sets_domain_name(hass):
-    coord = NeakasaDataUpdateCoordinator(
-        hass=hass, scan_interval=timedelta(seconds=300)
-    )
+    coord = _make_coordinator(hass, MagicMock())
     assert coord.name == DOMAIN
 
 
 def test_init_sets_update_interval(hass):
-    coord = NeakasaDataUpdateCoordinator(hass=hass, scan_interval=timedelta(seconds=42))
+    coord = NeakasaDataUpdateCoordinator(
+        hass=hass, entry=_fake_entry(MagicMock()), scan_interval=timedelta(seconds=42)
+    )
     assert coord.update_interval == timedelta(seconds=42)
+
+
+def test_init_binds_config_entry(hass):
+    entry = _fake_entry(MagicMock())
+    coord = NeakasaDataUpdateCoordinator(
+        hass=hass, entry=entry, scan_interval=timedelta(seconds=300)
+    )
+    assert coord.config_entry is entry
 
 
 def test_scan_interval_from_options_default():
