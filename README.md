@@ -3,13 +3,13 @@
 [![CI](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/ci.yml/badge.svg)](https://github.com/roquerodrigo/ha-neakasa-litterbox/actions/workflows/ci.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-neakasa-litterbox&category=integration)
+
+---
+
 Home Assistant integration for the [Neakasa M1](https://www.neakasa.com/) self-cleaning litter box. Talks to the Neakasa cloud through the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/), so it works without LAN-side setup: one config entry per account exposes every litter box bound to it, plus a sub-device per cat profile registered in the Neakasa app.
 
 The integration is **cloud push**: an MQTT status stream keeps state in real time, with a longer polling cadence as a safety net.
-
-## Add to Home Assistant
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=roquerodrigo&repository=ha-neakasa-litterbox&category=integration)
 
 ## Features
 
