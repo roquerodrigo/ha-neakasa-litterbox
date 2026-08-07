@@ -9,8 +9,9 @@ exit cleanly. `uv run pytest` (with the 90 % coverage gate) follows.
 
 ## Quality scale target
 
-This blueprint targets **Platinum** on the [Home Assistant Integration Quality
-Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/).
+This integration applies the **Bronze/Silver/Gold** rules of the
+[Home Assistant Integration Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/)
+that are pertinent to it; Platinum is an aspiration, not a claim.
 Each tier inherits every rule from the previous one:
 
 - **Bronze** — UI setup via `config_flow`, config-flow tests, user-facing docs.
@@ -21,9 +22,10 @@ Each tier inherits every rule from the previous one:
 - **Platinum** — strict typing, fully async code base, efficient data handling
   (no redundant polling or state-machine writes).
 
-Promotion to a tier requires a `quality_scale.yaml` at the integration root
-listing each rule as `done` / `todo` / `exempt` (with a reason). Add or update
-that file in the same PR that satisfies a new rule.
+`quality_scale.yaml` at the integration root lists each rule as
+`done` / `todo` / `exempt` (with a reason) and must stay **honest**: a rule is
+`done` only when the code actually implements it. Update the file in the same
+PR that satisfies (or removes) a rule.
 
 ## Language
 
@@ -86,12 +88,13 @@ Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` / `tuple` /
 
 Required:
 
-- `TypedDict` for known dict / JSON shapes (see `data.py` for the canonical
-  examples: `NeakasaPost`, `NeakasaConfigData`,
-  `NeakasaOptionsData`, `NeakasaDiagnosticsPayload`).
-- `@dataclass` for structured records (`NeakasaData`).
+- `TypedDict` for known dict / JSON shapes (see the `data` module for the
+  canonical examples: `NeakasaConfigData`, `NeakasaOptionsData`,
+  `NeakasaDeviceInfo`, `NeakasaDiagnosticsPayload`).
+- `@dataclass` for structured records (`NeakasaData`,
+  `NeakasaDeviceSnapshot`, `NeakasaPayload`).
 - Named `type` aliases for recursive / shared shapes — `JsonPrimitive`,
-  `JsonValue`, `JsonObject` in `data.py`.
+  `JsonValue`, `JsonObject` in the `data` module.
 - `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
 - `cast("TypedDictName", value)` at HA framework boundaries that hand us a
   permissive type (e.g. `entry.data` is `MappingProxyType[str, Any]`).
@@ -195,9 +198,8 @@ with a one-line comment explaining the deliberate narrowing — see
   (`data.py`). Never store integration state in `hass.data` — `runtime_data` is
   auto-discarded on unload, the legacy `hass.data[DOMAIN][entry_id]` pattern is
   not.
-- The coordinator is typed as `DataUpdateCoordinator[NeakasaPost]`
-  (or whatever your real payload TypedDict is). `_async_update_data` returns
-  the typed payload.
+- The coordinator is typed as `DataUpdateCoordinator[NeakasaPayload]`.
+  `_async_update_data` returns the typed payload.
 - Use `await coordinator.async_config_entry_first_refresh()` during
   `async_setup_entry` (not `async_refresh()`) — a failed first refresh raises
   `ConfigEntryNotReady` and HA retries with backoff automatically.
@@ -251,9 +253,13 @@ Both gates must stay green:
   `AwesomeVersion` — CalVer or SemVer.
 - `hacs.json` at the repo root pins the minimum HA core via the
   `homeassistant` key. This is the third HA pin (see `CLAUDE.md`).
-- Brand assets — at minimum a 256×256 `icon.png` — live in the
+- Brand assets — at minimum a 256×256 `icon.png` — live in
+  `custom_components/neakasa_litterbox/brand/`, which satisfies HACS
+  validation. Submission to the
   [home-assistant/brands](https://github.com/home-assistant/brands) repo under
-  `custom_integrations/<domain>/`, not in this repo.
+  `custom_integrations/<domain>/` is what makes the Home Assistant frontend
+  actually display the icon, and is still pending (tracked in
+  `quality_scale.yaml`).
 - A `README.md` at the repo root is required; HACS surfaces it as the
   integration description.
 
