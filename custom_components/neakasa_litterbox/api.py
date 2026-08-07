@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
     from neakasa_litterbox_sdk import (
         Cat,
-        DailyStatistics,
         Device,
         DeviceStatus,
         StatusStream,
@@ -125,20 +124,6 @@ class NeakasaApiClient:
         with _translate_errors():
             return await self._client.get_toilet_records(
                 device_name, start_time, end_time
-            )
-
-    async def async_get_toilet_statistics(
-        self,
-        device_name: str,
-        start_time: int,
-        end_time: int,
-        *,
-        zone_seconds: int = 0,
-    ) -> list[DailyStatistics]:
-        """Return per-day aggregates over the given window."""
-        with _translate_errors():
-            return await self._client.get_toilet_statistics(
-                device_name, start_time, end_time, zone_seconds=zone_seconds
             )
 
     async def async_start_clean(self, device_name: str) -> None:

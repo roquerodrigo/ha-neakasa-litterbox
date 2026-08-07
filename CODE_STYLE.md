@@ -44,8 +44,8 @@ that file in the same PR that satisfies a new rule.
     `api_client_communication_error.py`, `api_client_authentication_error.py`,
     plus `__init__.py`.
 - **TypedDicts and `type` aliases do not count as "classes"** for this rule —
-  they live alongside related code (typically in `data.py`) and don't need
-  their own file.
+  they live alongside related code (typically in the `data/` package) and
+  don't need their own file.
 - **Helper functions** may live in the same file as the single class that uses
   them (e.g. `_verify_response_or_raise` in `api.py`).
 - **`__init__.py` of the integration package** wires `async_setup_entry`,
@@ -216,17 +216,14 @@ with a one-line comment explaining the deliberate narrowing — see
   - Never let raw upstream exception strings reach `UpdateFailed` when they
     could carry tokens; convert to a sanitized message at the API client.
 
-## Config / options / repairs / diagnostics
+## Config / options / diagnostics
 
 - `config_flow.py` carries `user`, `reauth`, `reauth_confirm` and `reconfigure`
   steps, all sharing one `_validate` helper and one `_credentials_schema`
   builder.
 - `options_flow.py` holds the single `NeakasaOptionsFlow`
   class. New options keys go into the `NeakasaOptionsData`
-  TypedDict in `data.py`.
-- `repairs.py` exposes `async_create_fix_flow`. Sample helpers like
-  `async_raise_deprecated_api_issue` show how to register issues from anywhere
-  in the integration.
+  TypedDict in the `data/` package.
 - `diagnostics.py` returns `NeakasaDiagnosticsPayload`. Sensitive
   keys go into the `TO_REDACT: frozenset[str]` constant.
 
@@ -234,9 +231,9 @@ with a one-line comment explaining the deliberate narrowing — see
 
 - Two locales: `en.json` and `pt-BR.json`. `tests/test_translations.py`
   parametrizes over every locale and fails if their nested key sets diverge.
-- Issue strings live under `issues.<issue_id>`; options strings under
-  `options.step.init.data`; flow strings under `config.step.<step_id>`;
-  entity names under `entity.<platform>.<key>.name`.
+- Options strings live under `options.step.init.data`; flow strings under
+  `config.step.<step_id>`; entity names under
+  `entity.<platform>.<key>.name`.
 
 ## HACS publishing requirements
 

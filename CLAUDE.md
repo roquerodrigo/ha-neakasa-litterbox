@@ -69,7 +69,7 @@ sensor/, binary_sensor/, button/, number/, switch/
 
 ### Entry typing
 
-`data.py` defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push)` dataclass. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
+The `data/` package defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push)` dataclass (`data/runtime.py`), plus the config/options TypedDicts, the coordinator payload dataclasses and the diagnostics shapes, one concern per module, all re-exported from `data/__init__.py`. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
 ### Config flow surface
 
@@ -105,12 +105,3 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 ### Diagnostics
 
 `diagnostics.py` returns `NeakasaDiagnosticsPayload`. `username`/`password` are redacted via `async_redact_data` (driven by `TO_REDACT: frozenset[str]`). `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.
-
-### Repairs
-
-`repairs.py` is the entry point HA calls when the user clicks **Fix** on an issue:
-
-- `async_create_fix_flow(hass, issue_id, data)` returns a `RepairsFlow`. Branch on `issue_id` for multiple kinds; the default returns `ConfirmRepairFlow`.
-- `async_raise_deprecated_api_issue(hass)` is the sample helper that registers an issue. Call helpers like this from the coordinator/setup when you detect a recoverable problem.
-
-Issue strings live under `issues.<issue_id>` in the translation files.

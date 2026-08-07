@@ -97,18 +97,5 @@
             "child_lock": {"name": "Child lock"},
             "silent_mode": {"name": "Silent mode"}
         }
-    },
-    "issues": {
-        "deprecated_api": {
-            "title": "Deprecated API endpoint in use",
-            "fix_flow": {
-                "step": {
-                    "confirm": {
-                        "title": "Switch to the supported API",
-                        "description": "The endpoint this integration was using has been deprecated. Click submit to acknowledge; update the integration's config to use the new endpoint."
-                    }
-                }
-            }
-        }
     }
 }
