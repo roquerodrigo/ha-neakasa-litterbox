@@ -17,7 +17,6 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 - Sub-device per cat (with `via_device` pointing at the litter box).
 - Real-time updates via MQTT push, with polling fallback (default 10 min).
 - Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
-- Bucket-full sensor debounced: only flips on after **5 consecutive minutes** of the device reporting it full.
 - Per-region (US / EU / AP) login, reauth and reconfigure flows.
 - Translations: English and Brazilian Portuguese.
 
@@ -31,7 +30,7 @@ Per litter box (`device_name → "Neakasa M1"`):
 | `sensor` | Visits today | count since local midnight |
 | `sensor` | Last visit | timestamp of the most recent `CAT_VISIT` |
 | `binary_sensor` | Needs cleaning | `device_class=problem` |
-| `binary_sensor` | Waste bucket full | `device_class=problem`, debounced 5 min |
+| `binary_sensor` | Waste bucket full | `device_class=problem` |
 | `switch` | Auto clean | `EntityCategory.CONFIG` |
 | `switch` | Auto level | `EntityCategory.CONFIG` |
 | `switch` | Silent mode | `EntityCategory.CONFIG` |
@@ -87,19 +86,15 @@ The push channel verifies the broker's certificate chain and hostname. The Aliyu
 
 Switches, the sand-calibration slider and buttons run an **optimistic update**: after the SDK call returns, the integration patches the local `DeviceStatus` snapshot so the UI reflects the new state immediately. The MQTT push that follows (typically within 1–2 s) confirms the change. The previous design called `coordinator.async_request_refresh()` right after each command and then snapped the UI back to the cloud's pre-command state — that race is gone.
 
-## Bucket-full debounce
-
-`binary_sensor.<device>_waste_bucket_full` only goes **on** after the device reports `bucket_full=True` for **300 consecutive seconds** (5 min). Any reading of `False` clears the dwell timer immediately and resets the sensor. This filters out the brief flap that happens during clean cycles.
-
 ## Compatibility
 
 | Component | Version |
 |---|---|
-| Home Assistant | ≥ 2026.5.1 (matches `requirements.txt`, `hacs.json`, and `requirements_test.txt`) |
+| Home Assistant | ≥ 2026.5.1 (`hacs.json`; the dev pin in `pyproject.toml` tracks the same series) |
 | Python | 3.14 |
-| `neakasa-litterbox-sdk` | 0.1.1 |
+| `neakasa-litterbox-sdk` | pinned in [`manifest.json`](./custom_components/neakasa_litterbox/manifest.json) (currently 0.2.1) |
 
-The integration targets the **Platinum** tier of Home Assistant's [Integration Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/) — see [`custom_components/neakasa_litterbox/quality_scale.yaml`](./custom_components/neakasa_litterbox/quality_scale.yaml).
+The integration tracks Home Assistant's [Integration Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/); the per-rule status lives in [`custom_components/neakasa_litterbox/quality_scale.yaml`](./custom_components/neakasa_litterbox/quality_scale.yaml).
 
 ## Diagnostics
 
@@ -134,8 +129,8 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 
 ## CI
 
-- **`lint.yml`** — ruff (check + format) and mypy (Python 3.14)
-- **`validate.yml`** — `hassfest` + HACS validation; push/PR to `main` and a daily cron
+- **`ci.yml`** — shared reusable workflows: lint (ruff check + format, mypy), tests (pytest with the 90 % coverage gate) and validation (`hassfest` + HACS); push/PR to `main`
+- **`release.yml`** — release-please, gated on a green CI run on `main`
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
 
 ## Acknowledgements
