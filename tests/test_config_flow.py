@@ -16,6 +16,11 @@ from custom_components.neakasa_litterbox.exceptions import (
 
 USER_INPUT = {"username": "user@example.com", "password": "pass", "region": "us"}
 NEW_INPUT = {"username": "user@example.com", "password": "newpass", "region": "eu"}
+OTHER_ACCOUNT_INPUT = {
+    "username": "other@example.com",
+    "password": "otherpass",
+    "region": "us",
+}
 
 
 @contextmanager
@@ -183,6 +188,30 @@ async def test_reauth_auth_error_shows_auth(hass, enable_custom_integrations):
         )
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "auth"
+
+
+async def test_reauth_rejects_different_account(hass, enable_custom_integrations):
+    entry = _existing_entry(hass)
+    with _patch_both_clients():
+        result = await entry.start_reauth_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=OTHER_ACCOUNT_INPUT
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "unique_id_mismatch"
+    assert entry.data["username"] == "user@example.com"
+
+
+async def test_reconfigure_rejects_different_account(hass, enable_custom_integrations):
+    entry = _existing_entry(hass)
+    with _patch_both_clients():
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=OTHER_ACCOUNT_INPUT
+        )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "unique_id_mismatch"
+    assert entry.data["username"] == "user@example.com"
 
 
 async def test_reconfigure_shows_form(hass, enable_custom_integrations):
