@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.3...v1.3.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **deps:** bump neakasa-litterbox-sdk to 0.2.2 ([b8dc821](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/b8dc8213bcf1a3f0ec615018e4490f3b2aef490b))
+
+
+### Tests
+
+* fail when the manifest and dev-group SDK pins drift ([a554c17](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/a554c173c4060d9d1456da715ccab7305397b646))
+
 ## [1.3.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.2...v1.3.3) (2026-08-07)
 
 
