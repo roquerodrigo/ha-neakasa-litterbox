@@ -37,7 +37,8 @@
         "abort": {
             "already_configured": "Esta conta já está configurada.",
             "reauth_successful": "Re-autenticação concluída com sucesso.",
-            "reconfigure_successful": "Reconfiguração concluída com sucesso."
+            "reconfigure_successful": "Reconfiguração concluída com sucesso.",
+            "unique_id_mismatch": "As credenciais pertencem a outra conta. Adicione uma nova entrada para essa conta."
         }
     },
     "options": {

@@ -117,6 +117,8 @@ class NeakasaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             errors = await self._validate(user_input)
             if not errors:
+                await self.async_set_unique_id(slugify(user_input["username"]))
+                self._abort_if_unique_id_mismatch()
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=dict(user_input),
@@ -143,6 +145,8 @@ class NeakasaFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             errors = await self._validate(user_input)
             if not errors:
+                await self.async_set_unique_id(slugify(user_input["username"]))
+                self._abort_if_unique_id_mismatch()
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=dict(user_input),
