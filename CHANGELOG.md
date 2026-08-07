@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.3.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.2...v1.3.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* abort reauth and reconfigure when credentials belong to another account ([24d837b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/24d837bcdf438fc26ef39ff53c17ac523015e9e3))
+* bind the SDK session, push supervisor and coordinator to the entry lifecycle ([47b06d1](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/47b06d1a8d09ccb89cf71fb79fdc1a6191a8490e))
+
+
+### Code Refactoring
+
+* remove blueprint leftovers and split data and entity modules into packages ([0c24e36](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/0c24e364ed712efd24076907382a285eb6f74be0))
+
+
+### Dependencies
+
+* bump the paired Home Assistant pins to 2026.8.0 ([b30d598](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/b30d598b25ff758d69f725e4b939c90300b7c1db))
+
+
+### Development Dependencies
+
+* **deps-dev:** Bump ruff ([a216280](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/a2162804fe39b9b2d46e9820449ce760130e8d37))
+
+
+### Documentation
+
+* describe the code as it is and make quality scale claims honest ([414fdbe](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/414fdbee8e1579e2de74ac12d7201ae951365619))
+
+
+### Continuous Integration
+
+* run checks on pull requests targeting any branch ([7e46bff](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/7e46bffcc01e770429bdcd390accacaece7bc5d0))
+* run code scanning on pull requests targeting any branch ([9af7732](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/9af7732600b8384644328138785bd21cc34ac1d8))
+
+
+### Miscellaneous Chores
+
+* move CI to the shared workflows repository ([6c40e2f](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/6c40e2f38c12cbcf3b7028a724154462a89201ef))
+* release on every conventional commit type ([71ee60e](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/71ee60e18a6aa0013ea0dd5e8e73991cfaa7837e))
+* repair scripts/setup and pin pre-commit hooks to the project toolchain ([92b6bef](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/92b6befe8621c604a18c8875cfe3caa382ec84ef))
+
 ## [1.3.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.1...v1.3.2) (2026-08-02)
 
 
