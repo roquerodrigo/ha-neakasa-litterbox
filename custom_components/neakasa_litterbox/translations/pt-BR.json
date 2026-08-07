@@ -97,18 +97,5 @@
             "child_lock": {"name": "Trava infantil"},
             "silent_mode": {"name": "Modo silencioso"}
         }
-    },
-    "issues": {
-        "deprecated_api": {
-            "title": "Endpoint da API depreciado em uso",
-            "fix_flow": {
-                "step": {
-                    "confirm": {
-                        "title": "Migrar para a API suportada",
-                        "description": "O endpoint usado por esta integração foi depreciado. Clique em enviar para confirmar; atualize a configuração da integração para usar o novo endpoint."
-                    }
-                }
-            }
-        }
     }
 }

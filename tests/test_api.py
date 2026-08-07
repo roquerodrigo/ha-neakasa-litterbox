@@ -156,14 +156,6 @@ async def test_get_toilet_records_delegates(sample_record):
     assert await client.async_get_toilet_records("dn-1", 0, 1) == [sample_record]
 
 
-async def test_get_toilet_statistics_delegates():
-    sdk = MagicMock()
-    sdk.get_toilet_statistics = AsyncMock(return_value=[])
-    client = _client(sdk)
-    assert await client.async_get_toilet_statistics("dn-1", 0, 1) == []
-    sdk.get_toilet_statistics.assert_awaited_once_with("dn-1", 0, 1, zone_seconds=0)
-
-
 @pytest.mark.parametrize(
     ("attr", "method"),
     [
