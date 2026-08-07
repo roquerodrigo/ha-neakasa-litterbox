@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.4...v1.3.5) (2026-08-07)
+
+
+### Documentation
+
+* normalize README header layout ([6ee1234](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/6ee123414c8aea61e36ef573600dbb2229629bdd))
+
 ## [1.3.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.3...v1.3.4) (2026-08-07)
 
 
