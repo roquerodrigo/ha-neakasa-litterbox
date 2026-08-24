@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.4...v1.4.0) (2026-08-24)
+
+
+### Features
+
+* **hacs:** ship the install zip with every release ([0819e1b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/0819e1b09562b3a074c27634645638c62b6bd0b0))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump the python-deps group across 1 directory with 3 updates ([c5a555f](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/c5a555fc1a7b1a499801083517d206b3def1f364))
+
+
+### Documentation
+
+* normalize README header layout ([6ee1234](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/6ee123414c8aea61e36ef573600dbb2229629bdd))
+
 ## [1.3.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.3...v1.3.4) (2026-08-07)
 
 
