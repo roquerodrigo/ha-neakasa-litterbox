@@ -1,5 +1,7 @@
 {
     "name": "Neakasa Litterbox",
+    "zip_release": true,
+    "filename": "neakasa_litterbox.zip",
     "homeassistant": "2026.8.0",
     "hacs": "2.0.5"
 }
