@@ -99,7 +99,8 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 
 - `NeakasaApiClientError` (base) ← `NeakasaError`, or `ApiError` for any code other than the one below
 - `NeakasaApiClientCommunicationError` ← `TransportError`
-- `NeakasaApiClientAuthenticationError` ← `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`
+- `NeakasaApiClientSessionExpiredError` ← `SessionExpiredError` (its own class, caught before the auth branch)
+- `NeakasaApiClientAuthenticationError` ← `InvalidCredentialsError`, `AuthenticationError`
 - `NeakasaApiClientDeviceBusyError` ← `ApiError` with code `29003` — the cloud rejects a property readback while the box is mid-cycle (cleaning/restoring/leveling); this is expected and transient, so the coordinator can keep-last on it instead of surfacing an error.
 
 ### Diagnostics
