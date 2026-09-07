@@ -78,6 +78,7 @@ async def test_update_data_returns_payload(
     snap = payload.devices[sample_device.iot_id]
     assert snap.status is sample_status
     assert snap.cats == (sample_cat,)
+    assert snap.cat_stats[sample_cat.id]["last_visit_weight_unit"] == sample_record.unit
 
 
 async def test_update_data_raises_update_failed_on_api_error(hass):
@@ -233,6 +234,7 @@ def test_build_snapshot_counts_today_visits(
     assert snap.visits_today == 1
     assert snap.last_visit_at == max(sample_record.start_time, today_record.start_time)
     assert snap.cat_stats[sample_cat.id]["visits_today"] == 1
+    assert snap.cat_stats[sample_cat.id]["last_visit_weight_unit"] == "kg"
 
 
 def test_build_snapshot_handles_no_records(sample_device, sample_status, sample_cat):
@@ -240,3 +242,4 @@ def test_build_snapshot_handles_no_records(sample_device, sample_status, sample_
     assert snap.visits_today == 0
     assert snap.last_visit_at is None
     assert snap.cat_stats[sample_cat.id]["last_visit_at"] is None
+    assert snap.cat_stats[sample_cat.id]["last_visit_weight_unit"] is None

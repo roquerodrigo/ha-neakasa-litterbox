@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import dataclasses
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
+from homeassistant.const import UnitOfMass
 from neakasa_litterbox_sdk import OperatingState
 
 from custom_components.neakasa_litterbox.data import (
@@ -49,6 +51,7 @@ def _make_snapshot(
             sample_cat.id: {
                 "last_visit_at": 1_700_000_500,
                 "last_visit_weight": 4.65,
+                "last_visit_weight_unit": "kg",
                 "visits_today": 3,
             },
         }
@@ -74,8 +77,6 @@ async def test_setup_entry_lists_all_sensor_states(hass, setup_integration):
 
 
 def test_operating_state_maps_to_option(sample_device, sample_status, sample_cat):
-    import dataclasses
-
     status = dataclasses.replace(sample_status, operating_state=OperatingState.CLEANING)
     snap = _make_snapshot(sample_device, status, sample_cat)
     s = NeakasaOperatingStateSensor(_coord_with(snap), sample_device.iot_id)
@@ -91,8 +92,6 @@ def test_operating_state_maps_to_option(sample_device, sample_status, sample_cat
 
 
 def test_operating_state_unknown_becomes_none(sample_device, sample_status, sample_cat):
-    import dataclasses
-
     status = dataclasses.replace(sample_status, operating_state=OperatingState.UNKNOWN)
     snap = _make_snapshot(sample_device, status, sample_cat)
     s = NeakasaOperatingStateSensor(_coord_with(snap), sample_device.iot_id)
@@ -167,13 +166,57 @@ def test_cat_weight_returns_latest_visit_weight(
             sample_cat.id: {
                 "last_visit_at": 1_700_000_500,
                 "last_visit_weight": 4.65,
+                "last_visit_weight_unit": "kg",
                 "visits_today": 3,
             },
         },
     )
     s = NeakasaCatWeightSensor(_coord_with(snap), sample_device.iot_id, sample_cat.id)
     assert s.native_value == 4.65
+    assert s.native_unit_of_measurement == UnitOfMass.KILOGRAMS
     assert s.unique_id.endswith("_weight")
+
+
+def test_cat_weight_uses_pounds_from_latest_record(
+    sample_device, sample_status, sample_cat
+):
+    snap = _make_snapshot(
+        sample_device,
+        sample_status,
+        sample_cat,
+        cat_stats={
+            sample_cat.id: {
+                "last_visit_at": 1_700_000_500,
+                "last_visit_weight": 10.56,
+                "last_visit_weight_unit": "lbs",
+                "visits_today": 3,
+            },
+        },
+    )
+    s = NeakasaCatWeightSensor(_coord_with(snap), sample_device.iot_id, sample_cat.id)
+    assert s.native_value == 10.56
+    assert s.native_unit_of_measurement == UnitOfMass.POUNDS
+
+
+def test_cat_weight_falls_back_to_profile_unit(
+    sample_device, sample_status, sample_cat
+):
+    cat = dataclasses.replace(sample_cat, unit="lb")
+    snap = _make_snapshot(
+        sample_device,
+        sample_status,
+        cat,
+        cat_stats={
+            cat.id: {
+                "last_visit_at": 1_700_000_500,
+                "last_visit_weight": 10.56,
+                "last_visit_weight_unit": "",
+                "visits_today": 3,
+            },
+        },
+    )
+    s = NeakasaCatWeightSensor(_coord_with(snap), sample_device.iot_id, cat.id)
+    assert s.native_unit_of_measurement == UnitOfMass.POUNDS
 
 
 def test_cat_weight_none_without_payload(sample_device, sample_cat):

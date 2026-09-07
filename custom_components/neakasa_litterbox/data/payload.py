@@ -26,6 +26,7 @@ class NeakasaCatStats(TypedDict):
 
     last_visit_at: int | None
     last_visit_weight: float | None
+    last_visit_weight_unit: str | None
     visits_today: int
 
 

@@ -196,6 +196,7 @@ def _build_snapshot(
         cat_stats[cat.id] = NeakasaCatStats(
             last_visit_at=latest.start_time if latest is not None else None,
             last_visit_weight=latest.weight if latest is not None else None,
+            last_visit_weight_unit=latest.unit if latest is not None else None,
             visits_today=len(todays),
         )
 

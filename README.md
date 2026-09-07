@@ -45,7 +45,7 @@ Per cat (sub-device of the litter box):
 
 | Platform | Entity | Notes |
 |---|---|---|
-| `sensor` | Weight | weight measured on the cat's most recent visit (kg) |
+| `sensor` | Weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |
 
