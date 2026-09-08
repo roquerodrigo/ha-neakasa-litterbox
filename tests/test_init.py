@@ -29,6 +29,19 @@ async def test_setup_entry_creates_device_entities(hass, setup_integration):
     assert len(hass.states.async_all("sensor")) == 7
 
 
+async def test_setup_entry_links_cat_device_to_litter_box(
+    hass, setup_integration, sample_device, sample_cat
+):
+    registry = dr.async_get(hass)
+    litter_box = registry.async_get_device(identifiers={(DOMAIN, sample_device.iot_id)})
+    cat = registry.async_get_device(
+        identifiers={(DOMAIN, f"{sample_device.iot_id}-cat-{sample_cat.id}")}
+    )
+    assert litter_box is not None
+    assert cat is not None
+    assert cat.via_device_id == litter_box.id
+
+
 async def test_setup_entry_creates_binary_sensor_entities(hass, setup_integration):
     assert len(hass.states.async_all("binary_sensor")) == 2
 

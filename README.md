@@ -16,7 +16,7 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 ## Features
 
 - Multiple litter boxes per account, discovered dynamically.
-- Sub-device per cat (with `via_device` pointing at the litter box).
+- Sub-device per cat, linked to its litter box in the device registry.
 - Real-time updates via MQTT push, with polling fallback (default 10 min).
 - Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
 - Per-region (US / EU / AP) login, reauth and reconfigure flows.

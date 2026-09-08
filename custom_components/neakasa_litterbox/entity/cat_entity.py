@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -62,12 +63,24 @@ class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return DeviceInfo for this cat, anchored via_device to the litter box."""
+        """Return DeviceInfo for this cat, linked to its litter box device."""
         cat = self.cat
         name = cat.name if cat is not None else str(self._cat_id)
-        return DeviceInfo(
+        info = DeviceInfo(
             identifiers={(DOMAIN, cat_identifier(self._iot_id, self._cat_id))},
-            via_device=(DOMAIN, self._iot_id),
             name=name,
             manufacturer=MANUFACTURER,
         )
+        litter_box_device_id = self._litter_box_device_id
+        if litter_box_device_id:
+            info["via_device_id"] = litter_box_device_id
+        return info
+
+    @property
+    def _litter_box_device_id(self) -> str | None:
+        """Return the registry id of the litter box device, if registered."""
+        device = dr.async_get(self.hass).async_get_device_by_identifier(
+            (DOMAIN, self._iot_id),
+            self.coordinator.config_entry.entry_id,
+        )
+        return device.id if device else None
