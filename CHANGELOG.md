@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.4.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.0...v1.4.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* preserve cat weight units ([fb4735b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/fb4735b3b54e560d85187837fd4cf621217b4b27))
+
+
+### Dependencies
+
+* **deps:** bump pip from 26.1.2 to 26.2 ([e2b8b25](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/e2b8b256a6ed7802f95bdf822b6072b22748f21e))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff ([d0a02dc](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/d0a02dcd0bd97e4d1c6884af78c57483cbbc4d8a))
+
+
+### Documentation
+
+* add GitHub Sponsors button and support section ([2ddb367](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/2ddb3672d8d6c4c97fa11ea368f05044d33fb366))
+* record the dedicated session-expired error ([54a6711](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/54a67117d5480ab88cb9f3928006aafe8d869a90))
+
 ## [1.4.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.3.4...v1.4.0) (2026-08-24)
 
 
