@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.1...v1.4.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* link cat devices through via_device_id ([ff14617](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/ff14617b8dbfe59cbad9209ebe8e26f98d0338ad))
+
 ## [1.4.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.0...v1.4.1) (2026-09-08)
 
 
