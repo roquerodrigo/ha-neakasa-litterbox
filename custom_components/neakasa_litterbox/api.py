@@ -30,6 +30,10 @@ from .exceptions import (
 # so it gets its own error type the coordinator can keep-last on.
 _DEVICE_BUSY_CODE = 29003
 
+# The account listing also returns other Neakasa/Neabot products (e.g. robot
+# vacuums); the catbox endpoints reject them, so only this category is kept.
+_LITTER_BOX_CATEGORY_KEY = "CatLitter"
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
@@ -102,7 +106,12 @@ class NeakasaApiClient:
     async def async_list_devices(self) -> list[Device]:
         """Return every litter box bound to the authenticated account."""
         with _translate_errors():
-            return await self._client.list_devices()
+            devices = await self._client.list_devices()
+        return [
+            device
+            for device in devices
+            if device.category_key == _LITTER_BOX_CATEGORY_KEY
+        ]
 
     async def async_get_status(self, device_name: str) -> DeviceStatus:
         """Return the live status snapshot for a device."""

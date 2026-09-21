@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -131,6 +132,20 @@ async def test_async_close_swallows_sdk_error():
 async def test_list_devices_delegates(sample_device):
     sdk = MagicMock()
     sdk.list_devices = AsyncMock(return_value=[sample_device])
+    client = _client(sdk)
+    assert await client.async_list_devices() == [sample_device]
+
+
+async def test_list_devices_ignores_non_litter_box_devices(sample_device):
+    robot_vacuum = replace(
+        sample_device,
+        iot_id="iot-id-2",
+        device_name="dn-2",
+        product_name="Neabot - N2",
+        category_key="RobotCleaner",
+    )
+    sdk = MagicMock()
+    sdk.list_devices = AsyncMock(return_value=[sample_device, robot_vacuum])
     client = _client(sdk)
     assert await client.async_list_devices() == [sample_device]
 
