@@ -23,7 +23,7 @@ dev = [
     "pytest-homeassistant-custom-component==0.13.354",
 ]
 lint = [
-    "ruff==0.16.7",
+    "ruff==0.16.8",
     "mypy==2.3.1",
 ]
 
