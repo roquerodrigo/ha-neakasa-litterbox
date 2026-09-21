@@ -29,7 +29,7 @@ def sample_device() -> Device:
         product_key="pk",
         product_name="Neakasa M1",
         device_name="dn-1",
-        category_key="ck",
+        category_key="CatLitter",
         category_name="Litter Box",
         net_type="wifi",
         role=DeviceRole.OWNER,
