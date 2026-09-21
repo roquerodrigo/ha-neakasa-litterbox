@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.2...v1.4.3) (2026-09-21)
+
+
+### Bug Fixes
+
+* **api:** ignore devices that are not litter boxes ([1f5c314](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/1f5c314cfdff8a823ffd161aa9ae2dcfe60f4b4d)), closes [#89](https://github.com/roquerodrigo/ha-neakasa-litterbox/issues/89)
+
+
+### Dependencies
+
+* **deps:** bump anyio from 4.13.0 to 4.14.2 ([710fe92](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/710fe92932de641bea5798fc7320b802b0086b4e))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff in the python-deps group ([4ee5328](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/4ee5328066cec2cf079de3d158dabd08928c1f77))
+
 ## [1.4.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.1...v1.4.2) (2026-09-08)
 
 
