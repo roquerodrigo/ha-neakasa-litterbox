@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.3...v1.4.4) (2026-09-22)
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff in the python-deps group ([6a85808](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/6a85808857b62606eee5cbaf60dbeab923760d4c))
+
 ## [1.4.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.2...v1.4.3) (2026-09-21)
 
 
