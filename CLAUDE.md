@@ -6,7 +6,7 @@ Guidance for Claude Code (claude.ai/code) agents working in this repository.
 
 Before creating, renaming or restructuring any file/class/function, **read [`CODE_STYLE.md`](./CODE_STYLE.md)**. It is the single source of truth for conventions: language, file organisation, naming, typing, properties vs `__init__`, imports, docstrings, comments, coordinator pattern, repairs/diagnostics layout, translations, lint workflow.
 
-For user-facing topics (what's included, how to fork, rename steps, layout diagram, useful commands, CI list), see [`README.md`](./README.md).
+For user-facing topics (features, entities, setup, options, development commands, CI list), see [`README.md`](./README.md).
 
 This file deliberately avoids restating those rules — it only adds:
 
@@ -43,29 +43,19 @@ This integration is a thin wrapper around the [`neakasa-litterbox-sdk`](https://
 1. `custom_components/neakasa_litterbox/manifest.json` — `requirements: ["neakasa-litterbox-sdk==<X.Y.Z>"]` (what HA installs at runtime).
 2. `pyproject.toml` — `neakasa-litterbox-sdk==<X.Y.Z>` in `[dependency-groups] dev` (what lint/mypy/pytest resolve against).
 
-Past bumps landed as `fix(deps)`/`build(deps)` commits touching both files plus `uv.lock` in the same commit (e.g. `a120c7a`, `8eb34e9`) — copy that pattern rather than editing only one.
+Past bumps landed as a single `fix(deps)` commit touching both files plus `uv.lock` (e.g. `b8dc821`) — copy that pattern rather than editing only one. `tests/test_packaging.py` fails when the two pins drift.
 
 The integration only imports from the SDK's public surface, so an SDK release is safe as long as it doesn't rename/remove these:
 
-- `api.py` — `NeakasaClient` (wrapped by `NeakasaApiClient`) and its `watch_status()` method, which returns the `StatusStream` used by `push.py`.
+- `api.py` — `NeakasaClient` (wrapped by `NeakasaApiClient`) and its `watch_status()` method, which returns the `StatusStream` used by `push.py`; `Region` (looked up by name from the configured region).
 - `push.py` — `StatusStream`, `StatusUpdate`, `DeviceStatus`.
 - `coordinator.py` — `Cat`, `Device`, `DeviceStatus`, `ToiletRecord`, `RecordType`.
+- `sensor/operating_state.py` — `OperatingState` (the enum sensor's options are built from its lowercased member names).
 - `exceptions/` — `_translate_errors` in `api.py` catches the SDK's `NeakasaError`, `ApiError` (branching on its `.code`), `TransportError`, `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`. If the SDK adds/renames an exception class or changes an error code (e.g. the `29003` "device busy" code), update this mapping or the integration will surface the wrong HA exception (or none).
 
 ## Architecture
 
-The integration follows the HA `DataUpdateCoordinator` pattern, plus an MQTT push channel:
-
-```
-config_flow.py   → validates credentials and creates the ConfigEntry
-__init__.py      → instantiates ApiClient + DataUpdateCoordinator + PushClient, performs the first refresh
-coordinator.py   → polls every scan_interval seconds; returns the typed payload
-push.py          → subscribes to the SDK's MQTT status stream, merges deltas into coordinator data in real time
-sensor/, binary_sensor/, button/, number/, switch/
-                 → one package per platform; each reads coordinator.data and creates its entities.
-                   `<platform>/__init__.py` holds async_setup_entry + dynamic device/cat discovery,
-                   one file per entity class otherwise.
-```
+The integration follows the HA `DataUpdateCoordinator` pattern (polling as a fallback) plus an MQTT push channel (`push.py`) that merges status deltas into coordinator data in real time. Each platform is a package: `<platform>/__init__.py` holds `async_setup_entry` + dynamic device/cat discovery, one file per entity class otherwise.
 
 ### Entry typing
 
