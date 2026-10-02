@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.3...v1.4.4) (2026-10-02)
+
+
+### Dependencies
+
+* **deps:** bump urllib3 from 2.7.0 to 2.8.0 ([29a7f78](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/29a7f78aa50fd608088a843ce5d19b8f89d96356))
+* **deps:** bump virtualenv from 21.3.3 to 21.7.13 ([0e19cb2](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/0e19cb25477772e2765bfac6f57c5393fe9e5081))
+
+
+### Development Dependencies
+
+* **deps-dev:** bump ruff in the python-deps group ([c6d5749](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/c6d574976b82ce1070e98e14d9c149c02aeae615))
+* **deps-dev:** bump ruff in the python-deps group ([6a85808](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/6a85808857b62606eee5cbaf60dbeab923760d4c))
+
+
+### Documentation
+
+* refresh CLAUDE.md ([0e6e4be](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/0e6e4bee3562f1fde7bbc61a5245dc858601605f))
+
+
+### Build System
+
+* **release:** bump uv.lock through release-please ([b50fb07](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/b50fb074a81dc3242c4134f640bd43933886583a))
+
 ## [1.4.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.2...v1.4.3) (2026-09-21)
 
 
