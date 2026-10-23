@@ -61,6 +61,7 @@ async def test_level_now_press(sample_device, sample_status, sample_cat):
     assert btn.unique_id == f"{sample_device.iot_id}_level_now"
     await btn.async_press()
     client.async_start_level.assert_awaited_with(sample_device.device_name)
+    coord.async_request_refresh.assert_not_awaited()
 
 
 async def test_clean_now_no_op_without_snapshot(sample_device):

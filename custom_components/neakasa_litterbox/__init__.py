@@ -81,6 +81,7 @@ async def async_setup_entry(
         push=push,
     )
 
+    await push.async_restore_leveling_events()
     await coordinator.async_config_entry_first_refresh()
     await push.async_start()
     entry.async_on_unload(push.async_stop)

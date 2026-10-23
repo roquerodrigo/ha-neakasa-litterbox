@@ -243,3 +243,38 @@ def test_build_snapshot_handles_no_records(sample_device, sample_status, sample_
     assert snap.last_visit_at is None
     assert snap.cat_stats[sample_cat.id]["last_visit_at"] is None
     assert snap.cat_stats[sample_cat.id]["last_visit_weight_unit"] is None
+
+
+async def test_cloud_poll_notifies_leveling_observer(
+    hass, sample_device, sample_status, sample_cat
+):
+    from dataclasses import replace
+
+    from neakasa_litterbox_sdk import OperatingState
+
+    client = MagicMock()
+    client.async_list_devices = AsyncMock(return_value=[sample_device])
+    client.async_get_status = AsyncMock(
+        return_value=replace(sample_status, operating_state=OperatingState.IDLE)
+    )
+    client.async_list_cats = AsyncMock(return_value=[sample_cat])
+    client.async_get_toilet_records = AsyncMock(return_value=[])
+    coord = _make_coordinator(hass, client)
+
+    from custom_components.neakasa_litterbox.coordinator import _build_snapshot
+
+    previous = _build_snapshot(
+        sample_device,
+        replace(sample_status, operating_state=OperatingState.LEVELING),
+        [sample_cat],
+        [],
+    )
+    coord.data = NeakasaPayload(devices={sample_device.iot_id: previous})
+    observer = MagicMock()
+    coord.leveling_state_callback = observer
+
+    await coord._async_update_data()
+
+    observer.assert_called_once_with(
+        sample_device.iot_id, OperatingState.LEVELING, OperatingState.IDLE
+    )

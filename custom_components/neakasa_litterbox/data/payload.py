@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, TypedDict
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from neakasa_litterbox_sdk import Cat, DeviceStatus
+    from neakasa_litterbox_sdk import Cat, DeviceStatus, ToiletRecord
 
 
 class NeakasaDeviceInfo(TypedDict):
@@ -28,6 +28,7 @@ class NeakasaCatStats(TypedDict):
     last_visit_weight: float | None
     last_visit_weight_unit: str | None
     visits_today: int
+    stay_today_seconds: int
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,9 @@ class NeakasaDeviceSnapshot:
     last_visit_at: int | None
     last_clean_at: int | None = None
     cat_stats: Mapping[int, NeakasaCatStats] = field(default_factory=dict)
+    recent_records: tuple[ToiletRecord, ...] = ()
+    leveling_events: tuple[int, ...] = ()
+    leveling_durations: Mapping[int, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
