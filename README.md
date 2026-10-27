@@ -15,6 +15,9 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 
 ## Features
 
+- Native recent-activity sensor for cat visits, cleaning cycles, and observed leveling completions, including measured durations.
+- Per-cat daily stay duration sensors based on Neakasa visit records.
+- Leveling completion tracking reconciles MQTT push and cloud polling, with a 15-second confirmation threshold.
 - Multiple litter boxes per account, discovered dynamically.
 - Sub-device per cat, linked to its litter box in the device registry.
 - Real-time updates via MQTT push, with polling fallback (default 10 min).
@@ -31,6 +34,7 @@ Per litter box (`device_name → "Neakasa M1"`):
 | `sensor` | Sand level | percentage |
 | `sensor` | Visits today | count since local midnight |
 | `sensor` | Last visit | timestamp of the most recent `CAT_VISIT` |
+| `sensor` | Recent activity | structured visit, cleaning, and leveling events |
 | `binary_sensor` | Needs cleaning | `device_class=problem` |
 | `binary_sensor` | Waste bucket full | `device_class=problem` |
 | `switch` | Auto clean | `EntityCategory.CONFIG` |
@@ -48,6 +52,7 @@ Per cat (sub-device of the litter box):
 | `sensor` | Weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |
+| `sensor` | Stay today | total duration of today's recorded cat visits |
 
 ## Removing devices
 

@@ -25,4 +25,6 @@ class NeakasaLevelNowButton(NeakasaDeviceEntity, ButtonEntity):
             return
         client = self.coordinator.config_entry.runtime_data.client
         await client.async_start_level(snap.device["device_name"])
-        await self.coordinator.async_request_refresh()
+        # An immediate cloud read can return stale IDLE milliseconds after the
+        # MQTT stream reports LEVELING, obscuring the real operation.
+        # The push stream and periodic coordinator polling refresh the state.

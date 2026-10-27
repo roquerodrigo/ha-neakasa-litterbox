@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from neakasa_litterbox_sdk import NeakasaError, StatusUpdate
+from neakasa_litterbox_sdk import NeakasaError, OperatingState, StatusUpdate
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.neakasa_litterbox.const import DOMAIN
@@ -37,6 +37,8 @@ async def push_setup(hass, sample_device, sample_status, sample_cat):
     payload = NeakasaPayload(devices={snap.device["iot_id"]: snap})
     coordinator = MagicMock()
     coordinator.data = payload
+    coordinator.leveling_events = {}
+    coordinator.leveling_durations = {}
     coordinator.async_set_updated_data = MagicMock()
     coordinator.async_request_refresh = AsyncMock()
     stream = MagicMock()
@@ -157,3 +159,123 @@ async def test_handle_change_ignored_with_no_known_keys(push_setup):
         ),
     )
     coordinator.async_set_updated_data.assert_not_called()
+
+
+async def test_transient_leveling_to_idle_does_not_create_completion(push_setup, hass):
+    from dataclasses import replace
+    from unittest.mock import patch
+
+    push, _, _, coordinator, snap, _ = push_setup
+    leveling_status = replace(snap.status, operating_state=OperatingState.LEVELING)
+    leveling_snap = replace(snap, status=leveling_status)
+    coordinator.data = NeakasaPayload(devices={snap.device["iot_id"]: leveling_snap})
+    with patch.object(
+        push._leveling_store, "async_save", new_callable=AsyncMock
+    ) as save:
+        push._handle_change(
+            StatusUpdate(
+                device_name=snap.device["device_name"],
+                changes={"operating_state": OperatingState.IDLE},
+            )
+        )
+        await hass.async_block_till_done()
+        save.assert_not_awaited()
+    assert coordinator.leveling_events == {}
+    result = coordinator.async_set_updated_data.call_args.args[0]
+    assert result.devices[snap.device["iot_id"]].leveling_events == ()
+
+
+async def test_sustained_leveling_records_measured_duration(push_setup, hass):
+    from unittest.mock import patch
+
+    push, _, _, coordinator, snap, _ = push_setup
+    coordinator.data = NeakasaPayload(devices={snap.device["iot_id"]: snap})
+    with (
+        patch(
+            "custom_components.neakasa_litterbox.push.time.time",
+            side_effect=[1000.0, 1040.0],
+        ),
+        patch.object(push._leveling_store, "async_save", new_callable=AsyncMock),
+        patch.object(push._duration_store, "async_save", new_callable=AsyncMock),
+    ):
+        push._handle_change(
+            StatusUpdate(
+                device_name=snap.device["device_name"],
+                changes={"operating_state": OperatingState.LEVELING},
+            )
+        )
+        leveling_snapshot = coordinator.async_set_updated_data.call_args.args[0]
+        coordinator.data = leveling_snapshot
+        push._handle_change(
+            StatusUpdate(
+                device_name=snap.device["device_name"],
+                changes={"operating_state": OperatingState.IDLE},
+            )
+        )
+        await hass.async_block_till_done()
+    assert coordinator.leveling_events[snap.device["iot_id"]] == [1040]
+    assert coordinator.leveling_durations[snap.device["iot_id"]][1040] == 40
+    latest = coordinator.async_set_updated_data.call_args.args[0]
+    assert latest.devices[snap.device["iot_id"]].leveling_durations[1040] == 40
+
+
+async def test_poll_leveling_then_mqtt_idle_records_completion(push_setup, hass):
+    from unittest.mock import patch
+
+    push, _, _, coordinator, snap, _ = push_setup
+    device_id = snap.device["iot_id"]
+    with (
+        patch(
+            "custom_components.neakasa_litterbox.push.time.time",
+            side_effect=[1000.0, 1098.0],
+        ),
+        patch.object(push._leveling_store, "async_save", new_callable=AsyncMock),
+        patch.object(push._duration_store, "async_save", new_callable=AsyncMock),
+    ):
+        coordinator.leveling_state_callback(
+            device_id, OperatingState.IDLE, OperatingState.LEVELING
+        )
+        from dataclasses import replace
+
+        leveling_snapshot = replace(
+            snap, status=replace(snap.status, operating_state=OperatingState.LEVELING)
+        )
+        coordinator.data = NeakasaPayload(devices={device_id: leveling_snapshot})
+        push._handle_change(
+            StatusUpdate(
+                device_name=snap.device["device_name"],
+                changes={"operating_state": OperatingState.IDLE},
+            )
+        )
+        await hass.async_block_till_done()
+
+    assert coordinator.leveling_events[device_id] == [1098]
+    assert coordinator.leveling_durations[device_id][1098] == 98
+
+
+async def test_mqtt_leveling_then_poll_idle_records_completion(push_setup, hass):
+    from unittest.mock import patch
+
+    push, _, _, coordinator, snap, _ = push_setup
+    device_id = snap.device["iot_id"]
+    with (
+        patch(
+            "custom_components.neakasa_litterbox.push.time.time",
+            side_effect=[1000.0, 1098.0],
+        ),
+        patch.object(push._leveling_store, "async_save", new_callable=AsyncMock),
+        patch.object(push._duration_store, "async_save", new_callable=AsyncMock),
+    ):
+        push._handle_change(
+            StatusUpdate(
+                device_name=snap.device["device_name"],
+                changes={"operating_state": OperatingState.LEVELING},
+            )
+        )
+        coordinator.leveling_state_callback(
+            device_id, OperatingState.LEVELING, OperatingState.IDLE
+        )
+        await hass.async_block_till_done()
+
+    assert coordinator.leveling_events[device_id] == [1098]
+    assert coordinator.leveling_durations[device_id][1098] == 98

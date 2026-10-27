@@ -73,7 +73,7 @@ def _make_snapshot(
 
 async def test_setup_entry_lists_all_sensor_states(hass, setup_integration):
     states = hass.states.async_all("sensor")
-    assert len(states) == 7
+    assert len(states) == 9
 
 
 def test_operating_state_maps_to_option(sample_device, sample_status, sample_cat):
