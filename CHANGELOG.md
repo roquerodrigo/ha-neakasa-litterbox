@@ -5,7 +5,7 @@
 
 ### Features
 
-* **sensor:** add per-cat stay today sensor ([ef8ba2a](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/ef8ba2af9e1494bc503e25b52f7ab5140f2f7127))
+* **sensor:** add per-cat time in box today sensor ([ef8ba2a](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/ef8ba2af9e1494bc503e25b52f7ab5140f2f7127))
 
 
 ### Bug Fixes
