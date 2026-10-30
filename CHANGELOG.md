@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.5.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.3...v1.5.0) (2026-10-30)
+
+
+### Features
+
+* **sensor:** add per-cat stay today sensor ([ef8ba2a](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/ef8ba2af9e1494bc503e25b52f7ab5140f2f7127))
+
+
+### Bug Fixes
+
+* **coordinator:** de-duplicate toilet records by record_id ([2ef7d8b](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/2ef7d8b3ace0e294b1f2ae8fe3e0dd2cebf40c52))
+
+
+### Miscellaneous Chores
+
+* **release:** keep only user-facing changes in the changelog ([878d1f3](https://github.com/roquerodrigo/ha-neakasa-litterbox/commit/878d1f3f591703cb75cd95ebff691a4d3b47caac))
+
 ## [1.4.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.2...v1.4.3) (2026-09-21)
 
 
