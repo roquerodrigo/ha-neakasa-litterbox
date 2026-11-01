@@ -71,6 +71,20 @@
             "clean_now": {"name": "Limpar agora"},
             "level_now": {"name": "Nivelar agora"}
         },
+        "event": {
+            "activity": {
+                "name": "Atividade",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "cat_visit": "Visita de gato",
+                            "cleaning_completed": "Limpeza concluída",
+                            "leveling_completed": "Nivelamento concluído"
+                        }
+                    }
+                }
+            }
+        },
         "number": {
             "calibrate_sand": {"name": "Calibração de areia"}
         },

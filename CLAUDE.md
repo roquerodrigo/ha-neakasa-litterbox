@@ -59,7 +59,7 @@ The integration follows the HA `DataUpdateCoordinator` pattern (polling as a fal
 
 ### Entry typing
 
-The `data/` package defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push)` dataclass (`data/runtime.py`), plus the config/options TypedDicts, the coordinator payload dataclasses and the diagnostics shapes, one concern per module, all re-exported from `data/__init__.py`. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
+The `data/` package defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push, activity_record_tracker)` dataclass (`data/runtime.py`), plus the config/options TypedDicts, the coordinator payload dataclasses and the diagnostics shapes, one concern per module, all re-exported from `data/__init__.py`. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
 
 ### Config flow surface
 
@@ -82,6 +82,12 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 ### Push client
 
 `push.py` (`NeakasaPushClient`) opens the SDK's `StatusStream` (MQTT, `watch_status()`) and merges each `StatusUpdate` delta into coordinator data as it arrives. A supervisor task polls the SDK's underlying dispatch task for liveness (the SDK doesn't surface disconnects on its public API) and respawns the stream with exponential backoff (5 s → up to 300 s cap) when it dies, resetting the backoff once a connection has been stable for 60 s. `async_setup_entry` starts it right after the coordinator's first refresh and registers `push.async_stop` via `entry.async_on_unload`.
+
+### Activity events
+
+`event/activity.py` (`NeakasaActivityEvent`) turns the cloud's `ToiletRecord`s into `cat_visit`, `cleaning_completed` and `leveling_completed` events. The records are the single source of truth, including for leveling: every type 3 record (`RecordType.OTHER` in the SDK) lines up with a `LEVELING` period of the operating state, for both automatic and button-triggered cycles, with device-reported start and end. Observing `operating_state` transitions instead would mean reconciling MQTT with stale polls and could not measure a cycle it only saw part of.
+
+`NeakasaActivityRecordTracker` (`activity_record_tracker.py`) decides what is new. It keeps one cursor per device and record type in a `Store`, because each type has its own id sequence (visits around 248 million, cleanings around 193 million, leveling around 10 million), so comparing against a single last id would hide records. A device without cursors only seeds them, which keeps the first run from replaying the lookback window. `async_remove_entry` deletes the file.
 
 ### API client
 

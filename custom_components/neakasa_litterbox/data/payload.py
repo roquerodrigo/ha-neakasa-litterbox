@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, NotRequired, TypedDict
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from neakasa_litterbox_sdk import Cat, DeviceStatus
+    from neakasa_litterbox_sdk import Cat, DeviceStatus, ToiletRecord
 
 
 class NeakasaDeviceInfo(TypedDict):
@@ -31,6 +31,22 @@ class NeakasaCatStats(TypedDict):
     time_in_box_today_seconds: int
 
 
+class NeakasaActivityEventAttributes(TypedDict):
+    """Attributes of an activity event; the cat fields only describe visits."""
+
+    record_id: int
+    started_at: str
+    ended_at: str
+    duration_seconds: int
+    cat_id: NotRequired[int | None]
+    cat_name: NotRequired[str | None]
+    weight: NotRequired[float]
+    weight_unit: NotRequired[str]
+
+
+type NeakasaActivityCursors = dict[str, dict[str, int]]
+
+
 @dataclass(frozen=True)
 class NeakasaDeviceSnapshot:
     """Per-device snapshot stored in coordinator data."""
@@ -42,6 +58,7 @@ class NeakasaDeviceSnapshot:
     last_visit_at: int | None
     last_clean_at: int | None = None
     cat_stats: Mapping[int, NeakasaCatStats] = field(default_factory=dict)
+    activity_records: tuple[ToiletRecord, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -71,6 +71,20 @@
             "clean_now": {"name": "Clean now"},
             "level_now": {"name": "Level now"}
         },
+        "event": {
+            "activity": {
+                "name": "Activity",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "cat_visit": "Cat visit",
+                            "cleaning_completed": "Cleaning completed",
+                            "leveling_completed": "Leveling completed"
+                        }
+                    }
+                }
+            }
+        },
         "number": {
             "calibrate_sand": {"name": "Sand calibration"}
         },
