@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from homeassistant.helpers.device_registry import (
-    ChildDeviceInfo,
-    async_get_device_id_by_identifier,
-)
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.device_registry import ChildDeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from ..const import ATTRIBUTION, DOMAIN
@@ -65,14 +63,20 @@ class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
 
     @property
     def device_info(self) -> ChildDeviceInfo:
-        """Return this cat as a child device of its litter box."""
+        """
+        Return this cat as a child device of its litter box.
+
+        Platforms are forwarded concurrently and a child device needs its parent
+        registered first, so the litter box is created here if none of its own
+        entities got to it yet.
+        """
         cat = self.cat
+        litter_box = dr.async_get(self.hass).async_get_or_create(
+            config_entry_id=self.coordinator.config_entry.entry_id,
+            identifiers={(DOMAIN, self._iot_id)},
+        )
         return ChildDeviceInfo(
             identifiers={(DOMAIN, cat_identifier(self._iot_id, self._cat_id))},
-            parent_device_id=async_get_device_id_by_identifier(
-                self.hass,
-                (DOMAIN, self._iot_id),
-                config_entry_id=self.coordinator.config_entry.entry_id,
-            ),
+            parent_device_id=litter_box.id,
             name=cat.name if cat is not None else str(self._cat_id),
         )

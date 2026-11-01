@@ -133,6 +133,18 @@ async def test_cat_entity_device_info_is_child_of_litter_box(
     assert "manufacturer" not in info
 
 
+async def test_cat_entity_device_info_registers_a_missing_litter_box(
+    hass, sample_device, sample_status, sample_cat
+):
+    entity, entry = _cat_entity_in_hass(hass, sample_device, sample_status, sample_cat)
+    info = entity.device_info
+    litter_box = dr.async_get(hass).async_get_device_by_identifier(
+        (DOMAIN, sample_device.iot_id), entry.entry_id
+    )
+    assert litter_box is not None
+    assert info["parent_device_id"] == litter_box.id
+
+
 def test_cat_entity_unavailable_without_payload(sample_device, sample_cat):
     coordinator = MagicMock()
     coordinator.data = None
@@ -171,9 +183,5 @@ async def test_cat_entity_device_info_falls_back_to_id(hass, sample_device, samp
         cat_id=sample_cat.id,
     )
     entity.hass = hass
-    dr.async_get(hass).async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, sample_device.iot_id)},
-    )
     info = entity.device_info
     assert info["name"] == str(sample_cat.id)

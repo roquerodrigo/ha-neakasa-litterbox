@@ -85,6 +85,9 @@
                 }
             }
         },
+        "image": {
+            "cat_photo": {"name": "Photo"}
+        },
         "number": {
             "calibrate_sand": {"name": "Sand calibration"}
         },

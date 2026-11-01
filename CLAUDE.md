@@ -85,7 +85,11 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 
 ### Cat devices
 
-Each cat is a `ChildDeviceInfo` of its litter box, which is what the devices page nests under the parent; a `via_device_id` link would list every cat as a top-level row. A child device needs its parent registered first, and platforms are forwarded concurrently, so `sensor/__init__.py` registers the litter box as soon as it discovers it, before creating any cat entity. Home Assistant converts a cat device an earlier version registered as a full device and keeps its id, so entities, names and areas carry over. The conversion is one way: a version that registers cats as full devices again would be rejected for overlapping a child device.
+Each cat is a `ChildDeviceInfo` of its litter box, which is what the devices page nests under the parent; a `via_device_id` link would list every cat as a top-level row. A child device needs its parent registered first, and platforms are forwarded concurrently, so `NeakasaCatEntity.device_info` creates the litter box device when none of its entities got to it yet. Home Assistant converts a cat device an earlier version registered as a full device and keeps its id, so entities, names and areas carry over. The conversion is one way: a version that registers cats as full devices again would be rejected for overlapping a child device.
+
+### Cat photo
+
+`image/cat_photo.py` (`NeakasaCatPhotoImage`) serves the photo set in the mobile app. The cloud signs `Cat.avatar` anew on every `list_cats` response, while `Cat.path` only moves when the photo is replaced, so `path` decides when the photo changed and `avatar` is only what gets downloaded. Comparing the URLs would report a new photo and fire a state change on every poll. The signed URL stays out of states and attributes, since Home Assistant proxies the bytes.
 
 ### Activity events
 

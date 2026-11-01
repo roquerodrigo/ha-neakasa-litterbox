@@ -46,6 +46,7 @@ Per cat (sub-device of the litter box):
 
 | Platform | Entity | Notes |
 |---|---|---|
+| `image` | Photo | the photo set in the Neakasa app; `unknown` for a cat without one, and it updates on the next poll after the photo is replaced |
 | `sensor` | Weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |
