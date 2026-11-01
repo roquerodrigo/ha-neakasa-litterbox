@@ -62,8 +62,8 @@ The **Activity** entity fires once for each record the Neakasa cloud keeps about
 | Event type | Meaning |
 |---|---|
 | `cat_visit` | a cat left the box |
-| `cleaning_completed` | a cleaning cycle finished, automatic or manual |
-| `leveling_completed` | a leveling cycle finished, automatic or manual |
+| `cleaning_completed` | a cleaning cycle finished |
+| `leveling_completed` | a leveling cycle finished |
 
 | Attribute | Event types | Notes |
 |---|---|---|
