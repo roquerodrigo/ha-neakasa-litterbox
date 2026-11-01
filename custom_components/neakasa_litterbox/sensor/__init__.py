@@ -5,7 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 
+from ..const import DOMAIN
 from .cat_last_visit import NeakasaCatLastVisitSensor
 from .cat_time_in_box_today import NeakasaCatTimeInBoxTodaySensor
 from .cat_visits_today import NeakasaCatVisitsTodaySensor
@@ -66,12 +68,13 @@ def _cat_sensors(
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,  # noqa: ARG001
+    hass: HomeAssistant,
     entry: NeakasaConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensor entities, including dynamic discovery of new devices/cats."""
     coordinator = entry.runtime_data.coordinator
+    device_registry = dr.async_get(hass)
     known_devices: set[str] = set()
     known_cats: set[tuple[str, int]] = set()
 
@@ -85,6 +88,11 @@ async def async_setup_entry(
             iot_id = snap.device["iot_id"]
             if iot_id not in known_devices:
                 known_devices.add(iot_id)
+                # A child device can only be created under a registered parent.
+                device_registry.async_get_or_create(
+                    config_entry_id=entry.entry_id,
+                    identifiers={(DOMAIN, iot_id)},
+                )
                 new.extend(_device_sensors(coordinator, iot_id))
             for cat in snap.cats:
                 key = (iot_id, cat.id)

@@ -118,7 +118,7 @@ def _cat_entity_in_hass(hass, sample_device, sample_status, sample_cat):
     return entity, entry
 
 
-async def test_cat_entity_device_info_links_to_litter_box(
+async def test_cat_entity_device_info_is_child_of_litter_box(
     hass, sample_device, sample_status, sample_cat
 ):
     entity, entry = _cat_entity_in_hass(hass, sample_device, sample_status, sample_cat)
@@ -127,15 +127,10 @@ async def test_cat_entity_device_info_links_to_litter_box(
         identifiers={(DOMAIN, sample_device.iot_id)},
     )
     info = entity.device_info
-    assert info["via_device_id"] == litter_box.id
-    assert "via_device" not in info
-
-
-async def test_cat_entity_device_info_without_registered_litter_box(
-    hass, sample_device, sample_status, sample_cat
-):
-    entity, _ = _cat_entity_in_hass(hass, sample_device, sample_status, sample_cat)
-    assert "via_device_id" not in entity.device_info
+    assert info["parent_device_id"] == litter_box.id
+    assert info["name"] == sample_cat.name
+    assert "via_device_id" not in info
+    assert "manufacturer" not in info
 
 
 def test_cat_entity_unavailable_without_payload(sample_device, sample_cat):
@@ -176,5 +171,9 @@ async def test_cat_entity_device_info_falls_back_to_id(hass, sample_device, samp
         cat_id=sample_cat.id,
     )
     entity.hass = hass
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, sample_device.iot_id)},
+    )
     info = entity.device_info
     assert info["name"] == str(sample_cat.id)

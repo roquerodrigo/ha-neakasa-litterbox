@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import (
+    ChildDeviceInfo,
+    async_get_device_id_by_identifier,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from ..const import ATTRIBUTION, DOMAIN, MANUFACTURER
+from ..const import ATTRIBUTION, DOMAIN
 from ..coordinator import NeakasaDataUpdateCoordinator
 from ..device_identity import cat_identifier
 
@@ -62,25 +64,15 @@ class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
         return super().available and self.cat is not None
 
     @property
-    def device_info(self) -> DeviceInfo:
-        """Return DeviceInfo for this cat, linked to its litter box device."""
+    def device_info(self) -> ChildDeviceInfo:
+        """Return this cat as a child device of its litter box."""
         cat = self.cat
-        name = cat.name if cat is not None else str(self._cat_id)
-        info = DeviceInfo(
+        return ChildDeviceInfo(
             identifiers={(DOMAIN, cat_identifier(self._iot_id, self._cat_id))},
-            name=name,
-            manufacturer=MANUFACTURER,
+            parent_device_id=async_get_device_id_by_identifier(
+                self.hass,
+                (DOMAIN, self._iot_id),
+                config_entry_id=self.coordinator.config_entry.entry_id,
+            ),
+            name=cat.name if cat is not None else str(self._cat_id),
         )
-        litter_box_device_id = self._litter_box_device_id
-        if litter_box_device_id:
-            info["via_device_id"] = litter_box_device_id
-        return info
-
-    @property
-    def _litter_box_device_id(self) -> str | None:
-        """Return the registry id of the litter box device, if registered."""
-        device = dr.async_get(self.hass).async_get_device_by_identifier(
-            (DOMAIN, self._iot_id),
-            self.coordinator.config_entry.entry_id,
-        )
-        return device.id if device else None

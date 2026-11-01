@@ -83,6 +83,10 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 
 `push.py` (`NeakasaPushClient`) opens the SDK's `StatusStream` (MQTT, `watch_status()`) and merges each `StatusUpdate` delta into coordinator data as it arrives. A supervisor task polls the SDK's underlying dispatch task for liveness (the SDK doesn't surface disconnects on its public API) and respawns the stream with exponential backoff (5 s → up to 300 s cap) when it dies, resetting the backoff once a connection has been stable for 60 s. `async_setup_entry` starts it right after the coordinator's first refresh and registers `push.async_stop` via `entry.async_on_unload`.
 
+### Cat devices
+
+Each cat is a `ChildDeviceInfo` of its litter box, which is what the devices page nests under the parent; a `via_device_id` link would list every cat as a top-level row. A child device needs its parent registered first, and platforms are forwarded concurrently, so `sensor/__init__.py` registers the litter box as soon as it discovers it, before creating any cat entity. Home Assistant converts a cat device an earlier version registered as a full device and keeps its id, so entities, names and areas carry over. The conversion is one way: a version that registers cats as full devices again would be rejected for overlapping a child device.
+
 ### Activity events
 
 `event/activity.py` (`NeakasaActivityEvent`) turns the cloud's `ToiletRecord`s into `cat_visit`, `cleaning_completed` and `leveling_completed` events. The records are the single source of truth, including for leveling: every type 3 record (`RecordType.OTHER` in the SDK) lines up with a `LEVELING` period of the operating state, whether or not the `Level now` button started the cycle, with device-reported start and end. Observing `operating_state` transitions instead would mean reconciling MQTT with stale polls and could not measure a cycle it only saw part of.
