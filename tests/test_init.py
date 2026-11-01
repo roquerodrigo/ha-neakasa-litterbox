@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.helpers import entity_registry as er
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    mock_device_registry,
+)
 
 from custom_components.neakasa_litterbox import async_remove_config_entry_device
 from custom_components.neakasa_litterbox.const import (
@@ -28,20 +32,95 @@ async def test_setup_entry_creates_device_entities(hass, setup_integration):
     assert len(hass.states.async_all("sensor")) == 8
 
 
-async def test_setup_entry_links_cat_device_to_litter_box(
+async def test_setup_entry_nests_cat_device_under_litter_box(
     hass, setup_integration, sample_device, sample_cat
 ):
     registry = dr.async_get(hass)
     litter_box = registry.async_get_device_by_identifier(
         (DOMAIN, sample_device.iot_id), setup_integration.entry_id
     )
-    cat = registry.async_get_device_by_identifier(
+    cat = registry.async_get_child_device_by_identifier(
         (DOMAIN, f"{sample_device.iot_id}-cat-{sample_cat.id}"),
         setup_integration.entry_id,
     )
     assert litter_box is not None
+    assert litter_box.name == sample_device.product_name
     assert cat is not None
-    assert cat.via_device_id == litter_box.id
+    assert cat.parent_device_id == litter_box.id
+    assert cat.name == sample_cat.name
+
+
+async def test_setup_entry_converts_cat_device_linked_through_via_device(
+    hass, mock_api_client, enable_custom_integrations, sample_device, sample_cat
+):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"username": "u@e.com", "password": "p", "region": "us"},
+        unique_id="u-e-com",
+    )
+    entry.add_to_hass(hass)
+    cat_identifier = (DOMAIN, f"{sample_device.iot_id}-cat-{sample_cat.id}")
+    litter_box = dr.DeviceEntry(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, sample_device.iot_id)},
+    )
+    cat = dr.DeviceEntry(
+        config_entry_id=entry.entry_id,
+        identifiers={cat_identifier},
+        name_by_user="Renamed",
+        via_device_id=litter_box.id,
+    )
+    registry = mock_device_registry(hass, {litter_box.id: litter_box, cat.id: cat})
+    entities = er.async_get(hass)
+    weight = entities.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        f"{sample_device.iot_id}_cat_{sample_cat.id}_weight",
+        config_entry=entry,
+        device_id=cat.id,
+    )
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    converted = registry.async_get_child_device_by_identifier(
+        cat_identifier, entry.entry_id
+    )
+    assert converted is not None
+    assert converted.id == cat.id
+    assert converted.parent_device_id == litter_box.id
+    assert converted.name_by_user == "Renamed"
+    assert entities.async_get(weight.entity_id).device_id == cat.id
+
+
+async def test_new_litter_box_with_cat_is_nested_without_reload(
+    hass, setup_integration, sample_device, sample_cat
+):
+    coordinator = setup_integration.runtime_data.coordinator
+    snapshot = coordinator.data.devices[sample_device.iot_id]
+    new_iot_id = "iot-id-2"
+    coordinator.async_set_updated_data(
+        NeakasaPayload(
+            devices={
+                **coordinator.data.devices,
+                new_iot_id: dataclasses.replace(
+                    snapshot, device={**snapshot.device, "iot_id": new_iot_id}
+                ),
+            }
+        )
+    )
+    await hass.async_block_till_done()
+
+    registry = dr.async_get(hass)
+    litter_box = registry.async_get_device_by_identifier(
+        (DOMAIN, new_iot_id), setup_integration.entry_id
+    )
+    cat = registry.async_get_child_device_by_identifier(
+        (DOMAIN, f"{new_iot_id}-cat-{sample_cat.id}"), setup_integration.entry_id
+    )
+    assert litter_box is not None
+    assert cat is not None
+    assert cat.parent_device_id == litter_box.id
 
 
 async def test_setup_entry_creates_binary_sensor_entities(hass, setup_integration):
@@ -114,6 +193,12 @@ def _device(hass, entry, identifier):
     )
 
 
+def _cat_device(hass, entry, identifier):
+    return dr.async_get(hass).async_get_child_device_by_identifier(
+        (DOMAIN, identifier), entry.entry_id
+    )
+
+
 def _drop_cats(entry):
     payload = entry.runtime_data.coordinator.data
     entry.runtime_data.coordinator.async_set_updated_data(
@@ -127,7 +212,7 @@ def _drop_cats(entry):
 
 
 async def test_remove_device_rejects_reported_cat(hass, setup_integration):
-    device = _device(hass, setup_integration, "iot-id-1-cat-42")
+    device = _cat_device(hass, setup_integration, "iot-id-1-cat-42")
     assert device is not None
     assert not await async_remove_config_entry_device(hass, setup_integration, device)
 
@@ -139,7 +224,7 @@ async def test_remove_device_rejects_reported_litter_box(hass, setup_integration
 
 
 async def test_remove_device_allows_cat_dropped_by_the_cloud(hass, setup_integration):
-    device = _device(hass, setup_integration, "iot-id-1-cat-42")
+    device = _cat_device(hass, setup_integration, "iot-id-1-cat-42")
     _drop_cats(setup_integration)
     await hass.async_block_till_done()
     assert await async_remove_config_entry_device(hass, setup_integration, device)
