@@ -221,6 +221,7 @@ def _build_snapshot(
         last_visit_at=last_visit_at,
         last_clean_at=last_clean_at,
         cat_stats=cat_stats,
+        activity_records=tuple(records),
     )
 
 

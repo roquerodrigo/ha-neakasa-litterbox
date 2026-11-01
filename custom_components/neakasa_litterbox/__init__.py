@@ -10,6 +10,7 @@ from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.loader import async_get_loaded_integration
 
+from .activity_record_tracker import NeakasaActivityRecordTracker
 from .api import NeakasaApiClient
 from .const import DOMAIN
 from .coordinator import NeakasaDataUpdateCoordinator, scan_interval_from_options
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
+    Platform.EVENT,
     Platform.NUMBER,
     Platform.SENSOR,
     Platform.SWITCH,
@@ -74,16 +76,21 @@ async def async_setup_entry(
         coordinator=coordinator,
     )
 
+    activity_record_tracker = NeakasaActivityRecordTracker(hass, entry.entry_id)
+    await activity_record_tracker.async_load()
+
     entry.runtime_data = NeakasaData(
         client=client,
         coordinator=coordinator,
         integration=async_get_loaded_integration(hass, entry.domain),
         push=push,
+        activity_record_tracker=activity_record_tracker,
     )
 
     await coordinator.async_config_entry_first_refresh()
     await push.async_start()
     entry.async_on_unload(push.async_stop)
+    entry.async_on_unload(activity_record_tracker.async_save)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -97,6 +104,14 @@ async def async_unload_entry(
 ) -> bool:
     """Handle removal of an entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(
+    hass: HomeAssistant,
+    entry: NeakasaConfigEntry,
+) -> None:
+    """Delete what the integration stored for an entry being removed."""
+    await NeakasaActivityRecordTracker(hass, entry.entry_id).async_remove()
 
 
 async def async_remove_config_entry_device(

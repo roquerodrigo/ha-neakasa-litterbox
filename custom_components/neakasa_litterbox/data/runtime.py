@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.loader import Integration
 
+    from ..activity_record_tracker import NeakasaActivityRecordTracker
     from ..api import NeakasaApiClient
     from ..coordinator import NeakasaDataUpdateCoordinator
     from ..push import NeakasaPushClient
@@ -25,3 +26,4 @@ class NeakasaData:
     coordinator: NeakasaDataUpdateCoordinator
     integration: Integration
     push: NeakasaPushClient
+    activity_record_tracker: NeakasaActivityRecordTracker

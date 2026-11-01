@@ -39,6 +39,7 @@ Per litter box (`device_name → "Neakasa M1"`):
 | `switch` | Child lock | `EntityCategory.CONFIG` |
 | `button` | Clean now | one-shot trigger |
 | `button` | Level now | one-shot trigger |
+| `event` | Activity | one event per cat visit, completed cleaning and completed leveling (see [Activity events](#activity-events)) |
 | `number` | Sand calibration | 0–100 % in 10 % steps, `EntityCategory.CONFIG` |
 
 Per cat (sub-device of the litter box):
@@ -53,6 +54,41 @@ Per cat (sub-device of the litter box):
 Time in box today counts only the portion of a visit after local midnight. It
 refreshes with the visit records and resets on the first update of a new local
 day. Cats without visits report zero.
+
+## Activity events
+
+The **Activity** entity fires once for each record the Neakasa cloud keeps about the litter box. Duplicates are prevented across polls and restarts, and activity that happened while Home Assistant was stopped is reported on startup, as long as it is still inside the statistics lookback window. Nothing is replayed the first time the entity runs.
+
+| Event type | Meaning |
+|---|---|
+| `cat_visit` | a cat left the box |
+| `cleaning_completed` | a cleaning cycle finished, automatic or manual |
+| `leveling_completed` | a leveling cycle finished, automatic or manual |
+
+| Attribute | Event types | Notes |
+|---|---|---|
+| `record_id` | all | cloud identifier of the record |
+| `started_at`, `ended_at` | all | ISO 8601 time reported by the device |
+| `duration_seconds` | all | time between the two above |
+| `cat_id`, `cat_name` | `cat_visit` | `null` when the box did not recognize the cat; `cat_name` is also `null` for a cat deleted in the app |
+| `weight`, `weight_unit` | `cat_visit` | weight measured on the visit |
+
+Records reach Home Assistant on the next poll, so the entity state (when the event fired) can be up to one `scan_interval` later than the activity. Use `started_at` and `ended_at` for the time it really happened.
+
+Past events are regular state history, so they follow the [Recorder](https://www.home-assistant.io/integrations/recorder/) retention (`purge_keep_days`, 10 days by default) and survive restarts and dashboard reloads. A custom card can read them with:
+
+```js
+const history = await hass.callWS({
+  type: "history/history_during_period",
+  start_time: new Date(Date.now() - 7 * 86400000).toISOString(),
+  entity_ids: ["event.neakasa_m1_activity"],
+  minimal_response: false,
+  no_attributes: false,
+  significant_changes_only: false,
+});
+```
+
+Each entry of `history["event.neakasa_m1_activity"]` carries the attributes above under `a`.
 
 ## Removing devices
 

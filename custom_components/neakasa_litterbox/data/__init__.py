@@ -4,6 +4,8 @@ from .config import NeakasaConfigData, NeakasaOptionsData
 from .diagnostics import NeakasaDiagnosticsEntry, NeakasaDiagnosticsPayload
 from .json_types import JsonObject, JsonPrimitive, JsonValue
 from .payload import (
+    NeakasaActivityCursors,
+    NeakasaActivityEventAttributes,
     NeakasaCatStats,
     NeakasaDeviceInfo,
     NeakasaDeviceSnapshot,
@@ -15,6 +17,8 @@ __all__ = [
     "JsonObject",
     "JsonPrimitive",
     "JsonValue",
+    "NeakasaActivityCursors",
+    "NeakasaActivityEventAttributes",
     "NeakasaCatStats",
     "NeakasaConfigData",
     "NeakasaConfigEntry",
