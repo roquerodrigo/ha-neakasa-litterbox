@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-import voluptuous as vol
+import probatio
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
@@ -29,22 +29,22 @@ if TYPE_CHECKING:
 def _credentials_schema(
     default_username: str | None = None,
     default_region: str = DEFAULT_REGION,
-) -> vol.Schema:
+) -> probatio.Schema:
     """Build the email/password/region schema, optionally pre-filled."""
-    return vol.Schema(
+    return probatio.Schema(
         {
-            vol.Required(
+            probatio.Required(
                 CONF_USERNAME,
                 default=default_username
                 if default_username is not None
-                else vol.UNDEFINED,
+                else probatio.UNDEFINED,
             ): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.EMAIL),
             ),
-            vol.Required(CONF_PASSWORD): selector.TextSelector(
+            probatio.Required(CONF_PASSWORD): selector.TextSelector(
                 selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD),
             ),
-            vol.Required(
+            probatio.Required(
                 CONF_REGION,
                 default=default_region,
             ): selector.SelectSelector(

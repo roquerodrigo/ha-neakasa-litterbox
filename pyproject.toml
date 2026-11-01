@@ -14,13 +14,13 @@ package = false
 
 [dependency-groups]
 dev = [
-    "homeassistant==2026.8.0",
+    "homeassistant==2026.10.4",
     "neakasa-litterbox-sdk==0.2.2",
     "pre-commit==4.7.0",
     "pytest==9.0.3",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
-    "pytest-homeassistant-custom-component==0.13.354",
+    "pytest-homeassistant-custom-component==0.13.375",
 ]
 lint = [
     "ruff==0.17.2",
