@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.6.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.5.0...v1.6.0) (2026-11-01)
+
+This release adds an Activity event entity for each litter box and a Photo entity for each cat, and nests cat devices under their litter box.
+
+### New features
+
+- New Activity event entity per litter box fires once for each cat visit, completed cleaning and completed leveling recorded by the Neakasa cloud. ([#110](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/110))
+- Activity events are not repeated across polls or restarts, and activity that happened while Home Assistant was stopped is reported on startup. ([#110](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/110))
+- New Photo image entity for each cat shows the picture set in the Neakasa app and updates only when the photo is replaced. ([#113](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/113))
+
+### Improvements
+
+- Cat devices are now nested under their litter box on the devices page; existing cat devices keep their entities, entity IDs and custom names. ([#112](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/112))
+- Home Assistant 2026.10.0 or later is now required; downgrading to an earlier release of this integration requires removing the cat devices first. ([#112](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/112))
+
 ## [1.5.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.4.3...v1.5.0) (2026-10-30)
 
 
