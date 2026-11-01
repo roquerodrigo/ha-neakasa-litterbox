@@ -133,7 +133,7 @@ Switches, the sand-calibration slider and buttons run an **optimistic update**: 
 
 | Component | Version |
 |---|---|
-| Home Assistant | ≥ 2026.5.1 (`hacs.json`; the dev pin in `pyproject.toml` tracks the same series) |
+| Home Assistant | ≥ 2026.10.0 (`hacs.json`; the dev pin in `pyproject.toml` tracks the same series) |
 | Python | 3.14 |
 | `neakasa-litterbox-sdk` | pinned in [`manifest.json`](./custom_components/neakasa_litterbox/manifest.json) (currently 0.2.1) |
 

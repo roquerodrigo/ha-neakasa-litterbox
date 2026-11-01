@@ -32,9 +32,12 @@ async def test_setup_entry_links_cat_device_to_litter_box(
     hass, setup_integration, sample_device, sample_cat
 ):
     registry = dr.async_get(hass)
-    litter_box = registry.async_get_device(identifiers={(DOMAIN, sample_device.iot_id)})
-    cat = registry.async_get_device(
-        identifiers={(DOMAIN, f"{sample_device.iot_id}-cat-{sample_cat.id}")}
+    litter_box = registry.async_get_device_by_identifier(
+        (DOMAIN, sample_device.iot_id), setup_integration.entry_id
+    )
+    cat = registry.async_get_device_by_identifier(
+        (DOMAIN, f"{sample_device.iot_id}-cat-{sample_cat.id}"),
+        setup_integration.entry_id,
     )
     assert litter_box is not None
     assert cat is not None
@@ -105,8 +108,10 @@ async def test_scan_interval_picks_up_options(
     assert entry.runtime_data.coordinator.update_interval == timedelta(seconds=90)
 
 
-def _device(hass, identifier):
-    return dr.async_get(hass).async_get_device(identifiers={(DOMAIN, identifier)})
+def _device(hass, entry, identifier):
+    return dr.async_get(hass).async_get_device_by_identifier(
+        (DOMAIN, identifier), entry.entry_id
+    )
 
 
 def _drop_cats(entry):
@@ -122,19 +127,19 @@ def _drop_cats(entry):
 
 
 async def test_remove_device_rejects_reported_cat(hass, setup_integration):
-    device = _device(hass, "iot-id-1-cat-42")
+    device = _device(hass, setup_integration, "iot-id-1-cat-42")
     assert device is not None
     assert not await async_remove_config_entry_device(hass, setup_integration, device)
 
 
 async def test_remove_device_rejects_reported_litter_box(hass, setup_integration):
-    device = _device(hass, "iot-id-1")
+    device = _device(hass, setup_integration, "iot-id-1")
     assert device is not None
     assert not await async_remove_config_entry_device(hass, setup_integration, device)
 
 
 async def test_remove_device_allows_cat_dropped_by_the_cloud(hass, setup_integration):
-    device = _device(hass, "iot-id-1-cat-42")
+    device = _device(hass, setup_integration, "iot-id-1-cat-42")
     _drop_cats(setup_integration)
     await hass.async_block_till_done()
     assert await async_remove_config_entry_device(hass, setup_integration, device)
@@ -143,14 +148,14 @@ async def test_remove_device_allows_cat_dropped_by_the_cloud(hass, setup_integra
 async def test_remove_device_still_rejects_litter_box_after_cats_go(
     hass, setup_integration
 ):
-    device = _device(hass, "iot-id-1")
+    device = _device(hass, setup_integration, "iot-id-1")
     _drop_cats(setup_integration)
     await hass.async_block_till_done()
     assert not await async_remove_config_entry_device(hass, setup_integration, device)
 
 
 async def test_remove_device_allows_unloaded_entry(hass, setup_integration):
-    device = _device(hass, "iot-id-1")
+    device = _device(hass, setup_integration, "iot-id-1")
     await hass.config_entries.async_unload(setup_integration.entry_id)
     await hass.async_block_till_done()
     assert await async_remove_config_entry_device(hass, setup_integration, device)
