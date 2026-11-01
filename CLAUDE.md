@@ -85,7 +85,7 @@ Changing either triggers `async_reload_entry`, which re-instantiates the coordin
 
 ### Activity events
 
-`event/activity.py` (`NeakasaActivityEvent`) turns the cloud's `ToiletRecord`s into `cat_visit`, `cleaning_completed` and `leveling_completed` events. The records are the single source of truth, including for leveling: every type 3 record (`RecordType.OTHER` in the SDK) lines up with a `LEVELING` period of the operating state, for both automatic and button-triggered cycles, with device-reported start and end. Observing `operating_state` transitions instead would mean reconciling MQTT with stale polls and could not measure a cycle it only saw part of.
+`event/activity.py` (`NeakasaActivityEvent`) turns the cloud's `ToiletRecord`s into `cat_visit`, `cleaning_completed` and `leveling_completed` events. The records are the single source of truth, including for leveling: every type 3 record (`RecordType.OTHER` in the SDK) lines up with a `LEVELING` period of the operating state, whether or not the `Level now` button started the cycle, with device-reported start and end. Observing `operating_state` transitions instead would mean reconciling MQTT with stale polls and could not measure a cycle it only saw part of.
 
 `NeakasaActivityRecordTracker` (`activity_record_tracker.py`) decides what is new. It keeps one cursor per device and record type in a `Store`, because each type has its own id sequence (visits around 248 million, cleanings around 193 million, leveling around 10 million), so comparing against a single last id would hide records. A device without cursors only seeds them, which keeps the first run from replaying the lookback window. `async_remove_entry` deletes the file.
 
