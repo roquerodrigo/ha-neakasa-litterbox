@@ -85,6 +85,9 @@
                 }
             }
         },
+        "image": {
+            "cat_photo": {"name": "Foto"}
+        },
         "number": {
             "calibrate_sand": {"name": "Calibração de areia"}
         },
