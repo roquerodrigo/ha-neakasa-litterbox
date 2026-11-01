@@ -31,7 +31,7 @@ Both gates mirror CI (`.github/workflows/ci.yml`). Skip this only when the chang
 The Home Assistant version is pinned in three places and **must be updated together**, otherwise CI, HACS and the test harness drift apart:
 
 1. `pyproject.toml` — `homeassistant==<X.Y.Z>` in `[dependency-groups] dev` (runtime/CI lint + mypy).
-2. `hacs.json` — `"homeassistant": "<X.Y.Z>"` (minimum HA core enforced by HACS).
+2. `hacs.json` — `"homeassistant": "<X.Y>.0"` (minimum HA core enforced by HACS: the first release of the pinned `X.Y` line, not the patch release pinned in `pyproject.toml`).
 3. `pyproject.toml` — `pytest-homeassistant-custom-component==<matching release>` in `[dependency-groups] dev` (the test harness ships its own pinned `homeassistant`; the two pins must come from the same HA release, otherwise lint and tests resolve different cores).
 
 Verify the pairing on PyPI before committing: the `requires_dist` of `pytest-homeassistant-custom-component` must list the same `homeassistant==<X.Y.Z>` you pinned in `pyproject.toml`.
@@ -60,24 +60,6 @@ The integration follows the HA `DataUpdateCoordinator` pattern (polling as a fal
 ### Entry typing
 
 The `data/` package defines `NeakasaConfigEntry = ConfigEntry[NeakasaData]` and the `NeakasaData(client, coordinator, integration, push, activity_record_tracker)` dataclass (`data/runtime.py`), plus the config/options TypedDicts, the coordinator payload dataclasses and the diagnostics shapes, one concern per module, all re-exported from `data/__init__.py`. State lives on `entry.runtime_data` (auto-discarded on unload), never on `hass.data`.
-
-### Config flow surface
-
-`config_flow.py` implements four user-facing steps; all share one `_validate` helper and one `_credentials_schema` builder:
-
-- `async_step_user` — initial setup; sets unique_id from username, aborts on duplicate.
-- `async_step_reauth` / `async_step_reauth_confirm` — fired when the coordinator raises `ConfigEntryAuthFailed`. `async_update_reload_and_abort` rotates credentials in place.
-- `async_step_reconfigure` — lets the user edit credentials via the integration's three-dot menu, no delete-and-re-add cycle.
-- `async_get_options_flow` — returns `NeakasaOptionsFlow` from `options_flow.py` (one class per file).
-
-### Options flow
-
-`options_flow.py` (`NeakasaOptionsFlow`) exposes two options:
-
-- `scan_interval` (seconds; min 60, default 600) — the coordinator's polling fallback cadence.
-- `statistics_lookback_days` (days; min 1, max 30, default 7) — the coordinator's `ToiletRecord` lookback window for per-cat last-visit/visits-today sensors.
-
-Changing either triggers `async_reload_entry`, which re-instantiates the coordinator with the new `update_interval`/lookback.
 
 ### Push client
 
