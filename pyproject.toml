@@ -15,7 +15,7 @@ package = false
 [dependency-groups]
 dev = [
     "homeassistant==2026.10.4",
-    "neakasa-litterbox-sdk==0.2.2",
+    "neakasa-litterbox-sdk==0.2.3",
     "pre-commit==4.7.0",
     "pytest==9.0.3",
     "pytest-asyncio==1.4.0",
@@ -23,8 +23,8 @@ dev = [
     "pytest-homeassistant-custom-component==0.13.375",
 ]
 lint = [
-    "ruff==0.17.2",
-    "mypy==2.4.0",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
 ]
 
 [tool.pytest.ini_options]
