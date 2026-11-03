@@ -239,9 +239,10 @@ with a one-line comment explaining the deliberate narrowing — see
 
 ## HACS publishing requirements
 
-[HACS](https://www.hacs.xyz/docs/publish/integration/) validates the repository
-shape on every push via `hacs/action@main` (and HA itself runs `hassfest`).
-Both gates must stay green:
+[Home Assistant Autopilot](https://github.com/marketplace/actions/home-assistant-autopilot)
+validates the repository shape on every push: `hassfest`, the catalog checks of
+the [Home Assistant Marketplace](https://contributors.home-assistant.io/marketplace/),
+`hacs.json` and the versions it declares. Every check must stay green:
 
 - **One integration per repository**, located in `custom_components/<domain>/`.
 - `manifest.json` must declare `domain`, `name`, `version`, `documentation`,

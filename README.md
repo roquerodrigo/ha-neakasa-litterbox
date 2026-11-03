@@ -173,7 +173,7 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 
 ## CI
 
-- **`ci.yml`** — shared reusable workflows: lint (ruff check + format, mypy), tests (pytest with the 90 % coverage gate) and validation (`hassfest` + HACS); push/PR to `main`
+- **`ci.yml`** — shared reusable workflows for lint (ruff check + format, mypy) and tests (pytest with the 90 % coverage gate), and the Home Assistant Marketplace validation (`hassfest` and the catalog checks) of [Home Assistant Autopilot](https://github.com/marketplace/actions/home-assistant-autopilot); push/PR to `main`
 - **`release.yml`** — Release Autopilot, gated on a green CI run on `main`
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
 
