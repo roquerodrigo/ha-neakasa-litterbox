@@ -36,6 +36,8 @@ The Home Assistant version is pinned in three places and **must be updated toget
 
 Verify the pairing on PyPI before committing: the `requires_dist` of `pytest-homeassistant-custom-component` must list the same `homeassistant==<X.Y.Z>` you pinned in `pyproject.toml`.
 
+`pytest`, `pytest-asyncio` and `pytest-cov` are not pinned directly: the harness pins them, so they move with it. Dependabot ignores both `homeassistant` and the harness.
+
 ## Bumping `neakasa-litterbox-sdk`
 
 This integration is a thin wrapper around the [`neakasa-litterbox-sdk`](https://pypi.org/project/neakasa-litterbox-sdk/) PyPI package (companion repo `neakasa-litterbox-sdk`). The pin lives in two places that **must move together**, same failure mode as the HA version above:
