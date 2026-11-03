@@ -174,7 +174,7 @@ Conventions for contributors live in [`CODE_STYLE.md`](./CODE_STYLE.md); archite
 ## CI
 
 - **`ci.yml`** — shared reusable workflows: lint (ruff check + format, mypy), tests (pytest with the 90 % coverage gate) and validation (`hassfest` + HACS); push/PR to `main`
-- **`release.yml`** — release-please, gated on a green CI run on `main`
+- **`release.yml`** — Release Autopilot, gated on a green CI run on `main`
 - **`codeql.yml`** — GitHub CodeQL security scan; push/PR to `main` and a weekly cron
 
 ## Support
