@@ -23,6 +23,7 @@ from .exceptions import (
 )
 from .push import NeakasaPushClient
 from .services import async_setup_services
+from .stale_cat_devices import async_remove_stale_cat_devices
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -104,6 +105,13 @@ async def async_setup_entry(
     entry.async_on_unload(push.async_stop)
     entry.async_on_unload(activity_record_tracker.async_save)
 
+    async_remove_stale_cat_devices(hass, entry)
+    entry.async_on_unload(
+        coordinator.async_add_listener(
+            lambda: async_remove_stale_cat_devices(hass, entry)
+        )
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
@@ -134,8 +142,8 @@ async def async_remove_config_entry_device(
     """
     Let the user delete a litter box or a cat the cloud no longer reports.
 
-    A cat deleted in the mobile app keeps its Home Assistant device until
-    someone removes it. Devices still reported stay protected: their
+    A litter box unpaired from the account keeps its device, and its cats,
+    until someone removes it. Devices still reported stay protected: their
     entities are recreated only on the next reload, so deleting one mid
     session would leave the integration without them.
     """

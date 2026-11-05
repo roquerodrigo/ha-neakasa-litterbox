@@ -141,7 +141,14 @@ async def test_failed_download_is_retried_on_the_next_request(hass, photo_entry)
     assert route.call_count == 2
 
 
-async def test_cat_dropped_by_the_cloud_is_unavailable(hass, photo_entry):
+async def test_cat_of_unreported_litter_box_is_unavailable(hass, photo_entry):
+    coordinator = photo_entry.runtime_data.coordinator
+    coordinator.async_set_updated_data(NeakasaPayload(devices={}))
+    await hass.async_block_till_done()
+    assert hass.states.get(ENTITY_ID).state == "unavailable"
+
+
+async def test_cat_dropped_by_the_cloud_loses_its_photo(hass, photo_entry):
     coordinator = photo_entry.runtime_data.coordinator
     coordinator.async_set_updated_data(
         NeakasaPayload(
@@ -152,7 +159,7 @@ async def test_cat_dropped_by_the_cloud_is_unavailable(hass, photo_entry):
         )
     )
     await hass.async_block_till_done()
-    assert hass.states.get(ENTITY_ID).state == "unavailable"
+    assert hass.states.get(ENTITY_ID) is None
 
 
 async def test_platform_registers_photo_on_the_cat_device(

@@ -2,9 +2,8 @@
 Device registry identifiers for litter boxes and the cats linked to them.
 
 Each cat is a child device of the litter box it belongs to, and both share one
-identifier namespace. Removing a cat from the mobile app leaves its device
-behind in Home Assistant — matching registry entries against what the cloud
-still reports is what tells the two apart.
+identifier namespace. Matching registry entries against what the cloud still
+reports is what tells live devices from those deleted in the mobile app.
 """
 
 from __future__ import annotations

@@ -73,7 +73,7 @@ async def async_setup_entry(
     """Set up sensor entities, including dynamic discovery of new devices/cats."""
     coordinator = entry.runtime_data.coordinator
     known_devices: set[str] = set()
-    known_cats: set[tuple[str, int]] = set()
+    known_cat_ids: dict[str, set[int]] = {}
 
     @callback
     def _async_check_new() -> None:
@@ -86,10 +86,13 @@ async def async_setup_entry(
             if iot_id not in known_devices:
                 known_devices.add(iot_id)
                 new.extend(_device_sensors(coordinator, iot_id))
+            known = known_cat_ids.setdefault(iot_id, set())
+            # A cat dropped from the list loses its device and entities, so
+            # it is forgotten here to get them back if it is listed again.
+            known.intersection_update(cat.id for cat in snap.cats)
             for cat in snap.cats:
-                key = (iot_id, cat.id)
-                if key not in known_cats:
-                    known_cats.add(key)
+                if cat.id not in known:
+                    known.add(cat.id)
                     new.extend(_cat_sensors(coordinator, iot_id, cat.id))
         if new:
             async_add_entities(new)

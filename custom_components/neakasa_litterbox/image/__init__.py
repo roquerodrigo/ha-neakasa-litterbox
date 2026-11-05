@@ -25,7 +25,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up one photo per cat, including cats discovered later."""
     coordinator = entry.runtime_data.coordinator
-    known_cats: set[tuple[str, int]] = set()
+    known_cat_ids: dict[str, set[int]] = {}
 
     @callback
     def _async_check_new() -> None:
@@ -35,10 +35,13 @@ async def async_setup_entry(
         new: list[NeakasaCatPhotoImage] = []
         for snap in payload.devices.values():
             iot_id = snap.device["iot_id"]
+            known = known_cat_ids.setdefault(iot_id, set())
+            # A cat dropped from the list loses its device and entities, so
+            # it is forgotten here to get them back if it is listed again.
+            known.intersection_update(cat.id for cat in snap.cats)
             for cat in snap.cats:
-                key = (iot_id, cat.id)
-                if key not in known_cats:
-                    known_cats.add(key)
+                if cat.id not in known:
+                    known.add(cat.id)
                     new.append(NeakasaCatPhotoImage(coordinator, iot_id, cat.id))
         if new:
             async_add_entities(new)

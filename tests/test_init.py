@@ -223,9 +223,69 @@ async def test_remove_device_rejects_reported_litter_box(hass, setup_integration
     assert not await async_remove_config_entry_device(hass, setup_integration, device)
 
 
-async def test_remove_device_allows_cat_dropped_by_the_cloud(hass, setup_integration):
-    device = _cat_device(hass, setup_integration, "iot-id-1-cat-42")
+def _drop_litter_boxes(entry):
+    entry.runtime_data.coordinator.async_set_updated_data(NeakasaPayload(devices={}))
+
+
+def _cat_entity_ids(hass, entry):
+    return {
+        entity.entity_id
+        for entity in er.async_entries_for_config_entry(
+            er.async_get(hass), entry.entry_id
+        )
+        if "_cat_" in entity.unique_id
+    }
+
+
+async def test_cat_dropped_by_the_cloud_is_removed_with_its_entities(
+    hass, setup_integration
+):
+    assert _cat_entity_ids(hass, setup_integration)
     _drop_cats(setup_integration)
+    await hass.async_block_till_done()
+    assert _cat_device(hass, setup_integration, "iot-id-1-cat-42") is None
+    assert _device(hass, setup_integration, "iot-id-1") is not None
+    assert not _cat_entity_ids(hass, setup_integration)
+    assert len(hass.states.async_all("sensor")) == 4
+    assert len(hass.states.async_all("number")) == 1
+    assert not hass.states.async_all("image")
+
+
+async def test_cat_listed_again_gets_its_entities_back(hass, setup_integration):
+    coordinator = setup_integration.runtime_data.coordinator
+    payload = coordinator.data
+    _drop_cats(setup_integration)
+    await hass.async_block_till_done()
+    coordinator.async_set_updated_data(payload)
+    await hass.async_block_till_done()
+    assert _cat_device(hass, setup_integration, "iot-id-1-cat-42") is not None
+    assert len(hass.states.async_all("sensor")) == 8
+    assert len(hass.states.async_all("number")) == 2
+    assert len(hass.states.async_all("image")) == 1
+
+
+async def test_cat_dropped_while_unloaded_is_removed_on_setup(
+    hass, setup_integration, mock_api_client
+):
+    mock_api_client.async_list_cats.return_value = []
+    await hass.config_entries.async_reload(setup_integration.entry_id)
+    await hass.async_block_till_done()
+    assert _cat_device(hass, setup_integration, "iot-id-1-cat-42") is None
+    assert not _cat_entity_ids(hass, setup_integration)
+
+
+async def test_cat_of_unreported_litter_box_is_kept(hass, setup_integration):
+    _drop_litter_boxes(setup_integration)
+    await hass.async_block_till_done()
+    assert _cat_device(hass, setup_integration, "iot-id-1-cat-42") is not None
+    assert _cat_entity_ids(hass, setup_integration)
+
+
+async def test_remove_device_allows_cat_of_unreported_litter_box(
+    hass, setup_integration
+):
+    device = _cat_device(hass, setup_integration, "iot-id-1-cat-42")
+    _drop_litter_boxes(setup_integration)
     await hass.async_block_till_done()
     assert await async_remove_config_entry_device(hass, setup_integration, device)
 
