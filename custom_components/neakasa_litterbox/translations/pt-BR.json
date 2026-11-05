@@ -102,7 +102,7 @@
             "cat_last_visit": {"name": "Última visita"},
             "cat_time_in_box_today": {"name": "Tempo na caixa hoje"},
             "cat_visits_today": {"name": "Visitas hoje"},
-            "cat_weight": {"name": "Peso"},
+            "cat_weight": {"name": "Peso medido"},
             "last_visit": {"name": "Última visita"},
             "sand_percent": {"name": "Nível de areia"},
             "operating_state": {
