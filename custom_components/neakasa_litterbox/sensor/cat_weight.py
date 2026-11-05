@@ -11,23 +11,11 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import UnitOfMass
 
+from ..cat_profile_weight import normalize_weight_unit
 from ..entity import NeakasaCatEntity
 
 if TYPE_CHECKING:
     from ..data import NeakasaPayload
-
-_WEIGHT_UNIT_ALIASES = {
-    "kg": UnitOfMass.KILOGRAMS,
-    "lb": UnitOfMass.POUNDS,
-    "lbs": UnitOfMass.POUNDS,
-}
-
-
-def _normalize_weight_unit(unit: str | None) -> str | None:
-    """Return a Home Assistant mass unit for a Neakasa unit string."""
-    if not unit:
-        return None
-    return _WEIGHT_UNIT_ALIASES.get(unit.strip().casefold())
 
 
 class NeakasaCatWeightSensor(NeakasaCatEntity, SensorEntity):
@@ -53,12 +41,12 @@ class NeakasaCatWeightSensor(NeakasaCatEntity, SensorEntity):
             return UnitOfMass.KILOGRAMS
         stats = device.cat_stats.get(self.cat_id)
         if stats is not None:
-            unit = _normalize_weight_unit(stats.get("last_visit_weight_unit"))
+            unit = normalize_weight_unit(stats.get("last_visit_weight_unit"))
             if unit is not None:
                 return unit
         cat = next((cat for cat in device.cats if cat.id == self.cat_id), None)
         if cat is not None:
-            unit = _normalize_weight_unit(cat.unit)
+            unit = normalize_weight_unit(cat.unit)
             if unit is not None:
                 return unit
         return UnitOfMass.KILOGRAMS

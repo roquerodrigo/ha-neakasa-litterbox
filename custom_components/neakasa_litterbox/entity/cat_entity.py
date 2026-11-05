@@ -15,7 +15,7 @@ from ..device_identity import cat_identifier
 if TYPE_CHECKING:
     from neakasa_litterbox_sdk import Cat
 
-    from ..data import NeakasaPayload
+    from ..data import NeakasaDeviceSnapshot, NeakasaPayload
 
 
 class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
@@ -46,15 +46,20 @@ class NeakasaCatEntity(CoordinatorEntity[NeakasaDataUpdateCoordinator]):
         return self._cat_id
 
     @property
-    def cat(self) -> Cat | None:
-        """Return the live Cat profile if still present, else ``None``."""
+    def snapshot(self) -> NeakasaDeviceSnapshot | None:
+        """Return the latest snapshot of the parent litter box, if present."""
         payload: NeakasaPayload | None = self.coordinator.data
         if payload is None:
             return None
-        device = payload.devices.get(self._iot_id)
-        if device is None:
+        return payload.devices.get(self._iot_id)
+
+    @property
+    def cat(self) -> Cat | None:
+        """Return the live Cat profile if still present, else ``None``."""
+        snapshot = self.snapshot
+        if snapshot is None:
             return None
-        return next((c for c in device.cats if c.id == self._cat_id), None)
+        return next((c for c in snapshot.cats if c.id == self._cat_id), None)
 
     @property
     def available(self) -> bool:

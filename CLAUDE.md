@@ -111,7 +111,7 @@ Each cat is a `ChildDeviceInfo` of its litter box, which is what the devices pag
 
 ### Actions
 
-`services.py` registers `set_cat_weight` from `async_setup`, so the action exists even while no entry is loaded and fails with a validation error instead of disappearing. The `device_id` is resolved to a cat by matching its identifiers against the cats the coordinator still reports, which rejects litter box devices and cats deleted in the app with the same `not_a_cat` error. After the cloud accepts the weight, the coordinator refreshes so the profile is read back.
+`services.py` registers `set_cat_weight` from `async_setup`, so the action exists even while no entry is loaded and fails with a validation error instead of disappearing. The `device_id` is resolved to a cat by matching its identifiers against the cats the coordinator still reports, which rejects litter box devices and cats deleted in the app with the same `not_a_cat` error. The cat's `Weight` number (`number/cat_profile_weight.py`) writes the same field. Both go through `cat_profile_weight.async_save_cat_weight`, which sends the local UTC offset the cloud expects, maps API failures to a translated `HomeAssistantError` and refreshes the coordinator so the profile is read back. The number's native unit is the profile's own (`kg`/`lb`, falling back to `kg`, the same rule the visit weight sensor uses), so a value set in another display unit is converted back before it is saved.
 
 ### Diagnostics
 

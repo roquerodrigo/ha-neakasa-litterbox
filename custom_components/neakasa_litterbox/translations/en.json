@@ -95,7 +95,8 @@
             "cat_photo": {"name": "Photo"}
         },
         "number": {
-            "calibrate_sand": {"name": "Sand calibration"}
+            "calibrate_sand": {"name": "Sand calibration"},
+            "cat_profile_weight": {"name": "Weight"}
         },
         "sensor": {
             "cat_last_visit": {"name": "Last visit"},

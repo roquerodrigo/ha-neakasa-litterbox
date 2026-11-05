@@ -2,33 +2,30 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, cast
 
 import probatio
 from homeassistant.const import ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant, ServiceCall, callback
-from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import service
-from homeassistant.util import dt as dt_util
 
+from .cat_profile_weight import CAT_WEIGHT_UNITS, async_save_cat_weight
 from .const import DOMAIN
 from .device_identity import cat_identifier
-from .exceptions import NeakasaApiClientError
 
 if TYPE_CHECKING:
     from homeassistant.helpers.device_registry import AnyDeviceEntry
     from neakasa_litterbox_sdk import Cat
 
+    from .cat_profile_weight import CatWeightUnit
     from .data import NeakasaConfigEntry, NeakasaDeviceSnapshot
 
 SERVICE_SET_CAT_WEIGHT = "set_cat_weight"
 
 ATTR_WEIGHT = "weight"
 ATTR_UNIT = "unit"
-
-WEIGHT_UNITS: tuple[str, ...] = ("kg", "lb")
 
 SET_CAT_WEIGHT_SCHEMA = probatio.Schema(
     {
@@ -37,7 +34,7 @@ SET_CAT_WEIGHT_SCHEMA = probatio.Schema(
             probatio.Coerce(float),
             probatio.Range(min=0, min_included=False),
         ),
-        probatio.Required(ATTR_UNIT): probatio.In(WEIGHT_UNITS),
+        probatio.Required(ATTR_UNIT): probatio.In(CAT_WEIGHT_UNITS),
     }
 )
 
@@ -63,11 +60,6 @@ def _find_cat(
     )
 
 
-def _utc_offset_seconds() -> int:
-    """Return the offset of Home Assistant's time zone from UTC, in seconds."""
-    return int((dt_util.now().utcoffset() or timedelta()).total_seconds())
-
-
 async def _async_set_cat_weight(call: ServiceCall) -> None:
     """Save a weight to the profile of the cat device the call names."""
     device, entry = service.async_get_device_and_config_entry(
@@ -77,21 +69,13 @@ async def _async_set_cat_weight(call: ServiceCall) -> None:
     )
     entry = cast("NeakasaConfigEntry", entry)
     snapshot, cat = _find_cat(entry, device)
-    try:
-        await entry.runtime_data.client.async_set_cat_weight(
-            snapshot.device["device_name"],
-            cat.id,
-            call.data[ATTR_WEIGHT],
-            unit=cast("Literal['kg', 'lb']", call.data[ATTR_UNIT]),
-            zone_seconds=_utc_offset_seconds(),
-        )
-    except NeakasaApiClientError as exc:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="set_cat_weight_failed",
-            translation_placeholders={"cat_name": cat.name, "error": str(exc)},
-        ) from exc
-    await entry.runtime_data.coordinator.async_request_refresh()
+    await async_save_cat_weight(
+        entry,
+        snapshot,
+        cat,
+        call.data[ATTR_WEIGHT],
+        cast("CatWeightUnit", call.data[ATTR_UNIT]),
+    )
 
 
 @callback
