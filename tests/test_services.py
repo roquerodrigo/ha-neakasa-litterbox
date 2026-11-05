@@ -87,7 +87,7 @@ async def test_rejects_a_cat_the_cloud_no_longer_reports(
     hass, mock_api_client, mock_set_cat_weight, setup_integration
 ):
     device_id = _cat_device_id(hass, setup_integration)
-    mock_api_client.async_list_cats.return_value = []
+    mock_api_client.async_list_devices.return_value = []
     await setup_integration.runtime_data.coordinator.async_refresh()
 
     with pytest.raises(ServiceValidationError) as raised:
