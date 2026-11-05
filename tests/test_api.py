@@ -213,6 +213,26 @@ async def test_set_flag_methods_delegate(attr, method):
     getattr(sdk, attr).assert_awaited_once_with("dn-1", True)
 
 
+async def test_set_cat_weight_delegates():
+    sdk = MagicMock()
+    sdk.set_cat_weight = AsyncMock()
+    await _client(sdk).async_set_cat_weight(
+        "dn", 42, 4.8, unit="lb", zone_seconds=-10800
+    )
+    sdk.set_cat_weight.assert_awaited_once_with(
+        "dn", 42, 4.8, unit="lb", zone_seconds=-10800
+    )
+
+
+async def test_set_cat_weight_translates_errors():
+    sdk = MagicMock()
+    sdk.set_cat_weight = AsyncMock(side_effect=TransportError("down"))
+    with pytest.raises(NeakasaApiClientCommunicationError):
+        await _client(sdk).async_set_cat_weight(
+            "dn", 42, 4.8, unit="kg", zone_seconds=0
+        )
+
+
 def test_watch_status_returns_sdk_stream():
     sdk = MagicMock()
     sentinel = MagicMock()

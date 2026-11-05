@@ -60,6 +60,12 @@
                 "eu": "Europa",
                 "ap": "Ásia / Pacífico"
             }
+        },
+        "weight_unit": {
+            "options": {
+                "kg": "Quilogramas (kg)",
+                "lb": "Libras (lb)"
+            }
         }
     },
     "entity": {
@@ -115,6 +121,34 @@
             "auto_level": {"name": "Nivelamento automático"},
             "child_lock": {"name": "Trava infantil"},
             "silent_mode": {"name": "Modo silencioso"}
+        }
+    },
+    "services": {
+        "set_cat_weight": {
+            "name": "Definir peso do gato",
+            "description": "Grava um peso no perfil de um gato na nuvem da Neakasa, que a caixa de areia usa para diferenciar os gatos. Os demais campos do perfil não mudam, e as visitas anteriores não são reatribuídas.",
+            "fields": {
+                "device_id": {
+                    "name": "Gato",
+                    "description": "O dispositivo do gato cujo perfil recebe o peso."
+                },
+                "weight": {
+                    "name": "Peso",
+                    "description": "O peso a gravar, na unidade abaixo."
+                },
+                "unit": {
+                    "name": "Unidade",
+                    "description": "A unidade em que o peso está expresso."
+                }
+            }
+        }
+    },
+    "exceptions": {
+        "not_a_cat": {
+            "message": "{device_name} não é um gato informado pela nuvem da Neakasa."
+        },
+        "set_cat_weight_failed": {
+            "message": "Falha ao gravar o peso de {cat_name}: {error}"
         }
     }
 }
