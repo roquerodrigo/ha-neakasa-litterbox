@@ -136,7 +136,7 @@ async def test_setup_entry_creates_button_entities(hass, setup_integration):
 
 
 async def test_setup_entry_creates_number_entities(hass, setup_integration):
-    assert len(hass.states.async_all("number")) == 1
+    assert len(hass.states.async_all("number")) == 2
 
 
 async def test_unload_entry_succeeds(hass, setup_integration):

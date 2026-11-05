@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from homeassistant.core import callback
 
 from .calibrate_sand import NeakasaCalibrateSandNumber
+from .cat_profile_weight import NeakasaCatProfileWeightNumber
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from ..data import NeakasaConfigEntry, NeakasaPayload
 
 
-__all__ = ["NeakasaCalibrateSandNumber"]
+__all__ = ["NeakasaCalibrateSandNumber", "NeakasaCatProfileWeightNumber"]
 
 
 def _device_entities(
@@ -30,14 +31,24 @@ def _device_entities(
     return [NeakasaCalibrateSandNumber(coordinator, iot_id)]
 
 
+def _cat_entities(
+    coordinator: NeakasaDataUpdateCoordinator,
+    iot_id: str,
+    cat_id: int,
+) -> list[Entity]:
+    """Return the per-cat number entities."""
+    return [NeakasaCatProfileWeightNumber(coordinator, iot_id, cat_id)]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,  # noqa: ARG001
     entry: NeakasaConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up number entities, dynamically tracking new devices."""
+    """Set up number entities, dynamically tracking new devices and cats."""
     coordinator = entry.runtime_data.coordinator
     known_devices: set[str] = set()
+    known_cats: set[tuple[str, int]] = set()
 
     @callback
     def _async_check_new() -> None:
@@ -50,6 +61,11 @@ async def async_setup_entry(
             if iot_id not in known_devices:
                 known_devices.add(iot_id)
                 new.extend(_device_entities(coordinator, iot_id))
+            for cat in snap.cats:
+                key = (iot_id, cat.id)
+                if key not in known_cats:
+                    known_cats.add(key)
+                    new.extend(_cat_entities(coordinator, iot_id, cat.id))
         if new:
             async_add_entities(new)
 

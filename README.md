@@ -19,7 +19,7 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 - Sub-device per cat, nested under its litter box on the devices page.
 - Real-time updates via MQTT push, with polling fallback (default 10 min).
 - Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
-- `neakasa_litterbox.set_cat_weight` action to keep each cat's profile weight up to date.
+- Each cat's profile weight as a `number` entity, plus the `neakasa_litterbox.set_cat_weight` action, to keep it up to date.
 - Per-region (US / EU / AP) login, reauth and reconfigure flows.
 - Translations: English and Brazilian Portuguese.
 
@@ -49,6 +49,7 @@ Per cat (sub-device of the litter box):
 |---|---|---|
 | `image` | Photo | the photo set in the Neakasa app; `unknown` for a cat without one, and it updates on the next poll after the photo is replaced |
 | `sensor` | Weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
+| `number` | Weight | weight saved in the cat's profile, which the box uses to recognize the cat; setting it updates the profile in the Neakasa cloud. Native unit follows the profile (`kg`/`lb`) and Home Assistant handles display conversion, `EntityCategory.CONFIG` |
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |
 | `sensor` | Time in box today | total duration of completed visits since local midnight, shown in minutes |
@@ -96,7 +97,7 @@ Each entry of `history["event.neakasa_m1_activity"]` carries the attributes abov
 
 ### `neakasa_litterbox.set_cat_weight`
 
-Saves a weight to a cat's profile in the Neakasa cloud — the same field the app edits. The litter box compares each visit with the profile weights to tell cats apart, so keeping them current stops visits from being attributed to the wrong cat.
+Saves a weight to a cat's profile in the Neakasa cloud — the same field the app edits and the cat's **Weight** number shows. The litter box compares each visit with the profile weights to tell cats apart, so keeping them current stops visits from being attributed to the wrong cat.
 
 | Field | Required | Notes |
 |---|---|---|
