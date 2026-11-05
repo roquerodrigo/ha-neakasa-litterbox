@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.7.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.6.0...v1.7.0) (2026-11-05)
+
+Cat profile weights can now be saved from Home Assistant, and cats deleted in the Neakasa app are removed automatically.
+
+### New features
+
+- A new action, neakasa_litterbox.set_cat_weight, saves a weight to a cat's profile, which the litter box uses to tell cats apart. ([#121](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/121))
+- Each cat gets a Weight entity that shows the weight saved in its profile and can be changed from Home Assistant. ([#121](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/121))
+
+### Improvements
+
+- The sensor showing the weight measured on a cat's latest visit is renamed Measured weight; its entity id stays the same. ([#121](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/121))
+- A cat deleted in the Neakasa app is removed from Home Assistant with its entities on the next poll or at startup, instead of staying behind. ([#123](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/123))
+- A cat listed again in the Neakasa app gets its entities back without reloading the integration. ([#123](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/123))
+- The Neakasa Litterbox SDK dependency is updated to version 0.2.3. ([#121](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/121))
+
 ## [1.6.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.5.0...v1.6.0) (2026-11-01)
 
 This release adds an Activity event entity for each litter box and a Photo entity for each cat, and nests cat devices under their litter box.
