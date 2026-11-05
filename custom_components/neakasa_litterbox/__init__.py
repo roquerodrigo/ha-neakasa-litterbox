@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 from homeassistant.loader import async_get_loaded_integration
 
 from .activity_record_tracker import NeakasaActivityRecordTracker
@@ -21,10 +22,12 @@ from .exceptions import (
     NeakasaApiClientError,
 )
 from .push import NeakasaPushClient
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.device_registry import DeviceEntry
+    from homeassistant.helpers.typing import ConfigType
 
     from .data import NeakasaConfigData, NeakasaConfigEntry
 
@@ -37,6 +40,14 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.SWITCH,
 ]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:  # noqa: ARG001 - signature fixed by Home Assistant
+    """Register the service actions, which outlive any single config entry."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(

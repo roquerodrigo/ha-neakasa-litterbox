@@ -109,6 +109,10 @@ Each cat is a `ChildDeviceInfo` of its litter box, which is what the devices pag
 - `NeakasaApiClientAuthenticationError` ← `InvalidCredentialsError`, `AuthenticationError`
 - `NeakasaApiClientDeviceBusyError` ← `ApiError` with code `29003` — the cloud rejects a property readback while the box is mid-cycle (cleaning/restoring/leveling); this is expected and transient, so the coordinator can keep-last on it instead of surfacing an error.
 
+### Actions
+
+`services.py` registers `set_cat_weight` from `async_setup`, so the action exists even while no entry is loaded and fails with a validation error instead of disappearing. The `device_id` is resolved to a cat by matching its identifiers against the cats the coordinator still reports, which rejects litter box devices and cats deleted in the app with the same `not_a_cat` error. After the cloud accepts the weight, the coordinator refreshes so the profile is read back.
+
 ### Diagnostics
 
 `diagnostics.py` returns `NeakasaDiagnosticsPayload`. `username`/`password` are redacted via `async_redact_data` (driven by `TO_REDACT: frozenset[str]`). `.github/ISSUE_TEMPLATE/bug.yml` asks users to attach the dump.

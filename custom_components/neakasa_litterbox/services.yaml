@@ -1,0 +1,25 @@
+set_cat_weight:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: neakasa_litterbox
+    weight:
+      required: true
+      example: 4.8
+      selector:
+        number:
+          min: 0.01
+          max: 100
+          step: 0.01
+          mode: box
+    unit:
+      required: true
+      default: kg
+      selector:
+        select:
+          options:
+            - kg
+            - lb
+          translation_key: weight_unit

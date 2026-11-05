@@ -50,8 +50,9 @@ PR that satisfies (or removes) a rule.
   don't need their own file.
 - **Helper functions** may live in the same file as the single class that uses
   them (e.g. `_verify_response_or_raise` in `api.py`).
-- **`__init__.py` of the integration package** wires `async_setup_entry`,
-  `async_unload_entry`, `async_reload_entry` and nothing else.
+- **`__init__.py` of the integration package** wires `async_setup` (service
+  actions only, from `services.py`), `async_setup_entry`, `async_unload_entry`,
+  `async_reload_entry` and the entry/device removal hooks, and nothing else.
 
 ## Entities: one class per entity
 

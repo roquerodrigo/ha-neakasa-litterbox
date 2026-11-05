@@ -1,0 +1,7 @@
+{
+    "services": {
+        "set_cat_weight": {
+            "service": "mdi:scale"
+        }
+    }
+}

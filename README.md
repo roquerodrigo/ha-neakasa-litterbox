@@ -19,6 +19,7 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 - Sub-device per cat, nested under its litter box on the devices page.
 - Real-time updates via MQTT push, with polling fallback (default 10 min).
 - Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
+- `neakasa_litterbox.set_cat_weight` action to keep each cat's profile weight up to date.
 - Per-region (US / EU / AP) login, reauth and reconfigure flows.
 - Translations: English and Brazilian Portuguese.
 
@@ -90,6 +91,28 @@ const history = await hass.callWS({
 ```
 
 Each entry of `history["event.neakasa_m1_activity"]` carries the attributes above under `a`.
+
+## Actions
+
+### `neakasa_litterbox.set_cat_weight`
+
+Saves a weight to a cat's profile in the Neakasa cloud — the same field the app edits. The litter box compares each visit with the profile weights to tell cats apart, so keeping them current stops visits from being attributed to the wrong cat.
+
+| Field | Required | Notes |
+|---|---|---|
+| `device_id` | yes | the cat's device (litter box devices are rejected) |
+| `weight` | yes | greater than zero |
+| `unit` | yes | `kg` or `lb` |
+
+```yaml
+action: neakasa_litterbox.set_cat_weight
+data:
+  device_id: 0123456789abcdef0123456789abcdef
+  weight: 4.8
+  unit: kg
+```
+
+Only the weight changes: name, birthday, photo and the other profile fields stay as they are, and visits already recorded are not reassigned. The `weight` and `weight_unit` attributes of a `cat_visit` event carry the reading measured on that visit, ready to be passed on from an automation or a notification action.
 
 ## Removing devices
 

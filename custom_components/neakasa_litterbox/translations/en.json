@@ -60,6 +60,12 @@
                 "eu": "Europe",
                 "ap": "Asia / Pacific"
             }
+        },
+        "weight_unit": {
+            "options": {
+                "kg": "Kilograms (kg)",
+                "lb": "Pounds (lb)"
+            }
         }
     },
     "entity": {
@@ -115,6 +121,34 @@
             "auto_level": {"name": "Auto level"},
             "child_lock": {"name": "Child lock"},
             "silent_mode": {"name": "Silent mode"}
+        }
+    },
+    "services": {
+        "set_cat_weight": {
+            "name": "Set cat weight",
+            "description": "Saves a weight to a cat's profile in the Neakasa cloud, which the litter box uses to tell cats apart. The other profile fields stay as they are, and past visits are not reassigned.",
+            "fields": {
+                "device_id": {
+                    "name": "Cat",
+                    "description": "The cat device whose profile receives the weight."
+                },
+                "weight": {
+                    "name": "Weight",
+                    "description": "The weight to save, in the unit below."
+                },
+                "unit": {
+                    "name": "Unit",
+                    "description": "The unit the weight is expressed in."
+                }
+            }
+        }
+    },
+    "exceptions": {
+        "not_a_cat": {
+            "message": "{device_name} is not a cat reported by the Neakasa cloud."
+        },
+        "set_cat_weight_failed": {
+            "message": "Failed to save the weight of {cat_name}: {error}"
         }
     }
 }

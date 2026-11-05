@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import contextlib
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from neakasa_litterbox_sdk import (
     ApiError,
@@ -122,6 +122,25 @@ class NeakasaApiClient:
         """Return the cat profiles attached to a device."""
         with _translate_errors():
             return await self._client.list_cats(device_name)
+
+    async def async_set_cat_weight(
+        self,
+        device_name: str,
+        cat_id: int,
+        weight: float,
+        *,
+        unit: Literal["kg", "lb"],
+        zone_seconds: int,
+    ) -> None:
+        """Save ``weight`` to a cat's profile, leaving its other fields intact."""
+        with _translate_errors():
+            await self._client.set_cat_weight(
+                device_name,
+                cat_id,
+                weight,
+                unit=unit,
+                zone_seconds=zone_seconds,
+            )
 
     async def async_get_toilet_records(
         self,
