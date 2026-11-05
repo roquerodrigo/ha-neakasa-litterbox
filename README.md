@@ -48,7 +48,7 @@ Per cat (sub-device of the litter box):
 | Platform | Entity | Notes |
 |---|---|---|
 | `image` | Photo | the photo set in the Neakasa app; `unknown` for a cat without one, and it updates on the next poll after the photo is replaced |
-| `sensor` | Weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
+| `sensor` | Measured weight | weight measured on the cat's most recent visit; native unit follows Neakasa (`kg`/`lb`) and Home Assistant handles display conversion |
 | `number` | Weight | weight saved in the cat's profile, which the box uses to recognize the cat; setting it updates the profile in the Neakasa cloud. Native unit follows the profile (`kg`/`lb`) and Home Assistant handles display conversion, `EntityCategory.CONFIG` |
 | `sensor` | Last visit | timestamp |
 | `sensor` | Visits today | count since local midnight |

@@ -102,7 +102,7 @@
             "cat_last_visit": {"name": "Last visit"},
             "cat_time_in_box_today": {"name": "Time in box today"},
             "cat_visits_today": {"name": "Visits today"},
-            "cat_weight": {"name": "Weight"},
+            "cat_weight": {"name": "Measured weight"},
             "last_visit": {"name": "Last visit"},
             "sand_percent": {"name": "Sand level"},
             "operating_state": {
