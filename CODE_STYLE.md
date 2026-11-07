@@ -33,7 +33,7 @@ PR that satisfies (or removes) a rule.
   variable names, dictionary keys, identifier strings.
 - The conversation language with the user can be Portuguese or anything else;
   what is committed to disk stays English.
-- User-facing strings live in `custom_components/neakasa_litterbox/translations/{en,pt-BR}.json`
+- User-facing strings live in `custom_components/neakasa_litterbox/translations/{en,pt-BR,es}.json`
   only — never hardcoded in Python.
 
 ## File organization
@@ -232,7 +232,7 @@ with a one-line comment explaining the deliberate narrowing — see
 
 ## Translations
 
-- Two locales: `en.json` and `pt-BR.json`. `tests/test_translations.py`
+- Three locales: `en.json`, `pt-BR.json` and `es.json`. `tests/test_translations.py`
   parametrizes over every locale and fails if their nested key sets diverge.
 - Options strings live under `options.step.init.data`; flow strings under
   `config.step.<step_id>`; entity names under
