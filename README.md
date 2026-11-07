@@ -21,7 +21,7 @@ The integration is **cloud push**: an MQTT status stream keeps state in real tim
 - Optimistic UI: switches, the calibration slider and buttons reflect new state immediately; the device confirms via push within seconds.
 - Each cat's profile weight as a `number` entity, plus the `neakasa_litterbox.set_cat_weight` action, to keep it up to date.
 - Per-region (US / EU / AP) login, reauth and reconfigure flows.
-- Translations: English and Brazilian Portuguese.
+- Translations: English, Brazilian Portuguese and Spanish.
 
 ## Entities
 

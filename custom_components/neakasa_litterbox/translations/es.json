@@ -1,0 +1,155 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurar Neakasa Litterbox",
+                "description": "Introduce las credenciales de tu cuenta de Neakasa.",
+                "data": {
+                    "username": "Correo electrónico",
+                    "password": "Contraseña",
+                    "region": "Región"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Volver a autenticar Neakasa Litterbox",
+                "description": "Tus credenciales ya no son válidas. Introduce las credenciales actualizadas.",
+                "data": {
+                    "username": "Correo electrónico",
+                    "password": "Contraseña",
+                    "region": "Región"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigurar Neakasa Litterbox",
+                "description": "Actualiza las credenciales y la región para esta cuenta.",
+                "data": {
+                    "username": "Correo electrónico",
+                    "password": "Contraseña",
+                    "region": "Región"
+                }
+            }
+        },
+        "error": {
+            "auth": "El correo electrónico o la contraseña son incorrectos.",
+            "connection": "No se puede conectar a la nube de Neakasa.",
+            "unknown": "Ocurrió un error desconocido."
+        },
+        "abort": {
+            "already_configured": "Esta cuenta ya está configurada.",
+            "reauth_successful": "La reautenticación se completó con éxito.",
+            "reconfigure_successful": "La reconfiguración se completó con éxito.",
+            "unique_id_mismatch": "Las credenciales pertenecen a otra cuenta. Añade una nueva entrada para la otra cuenta."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opciones de Neakasa Litterbox",
+                "description": "Ajusta el intervalo de sondeo y las estadísticas para esta cuenta.",
+                "data": {
+                    "scan_interval": "Intervalo de sondeo (segundos)",
+                    "statistics_lookback_days": "Días de histórico para estadísticas"
+                }
+            }
+        }
+    },
+    "selector": {
+        "region": {
+            "options": {
+                "us": "Estados Unidos",
+                "eu": "Europa",
+                "ap": "Asia / Pacífico"
+            }
+        },
+        "weight_unit": {
+            "options": {
+                "kg": "Kilogramos (kg)",
+                "lb": "Libras (lb)"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "bucket_full": {"name": "Depósito de residuos lleno"},
+            "needs_cleaning": {"name": "Requiere limpieza"}
+        },
+        "button": {
+            "clean_now": {"name": "Limpiar ahora"},
+            "level_now": {"name": "Nivelar ahora"}
+        },
+        "event": {
+            "activity": {
+                "name": "Actividad",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "cat_visit": "Visita del gato",
+                            "cleaning_completed": "Limpieza completada",
+                            "leveling_completed": "Nivelado completado"
+                        }
+                    }
+                }
+            }
+        },
+        "image": {
+            "cat_photo": {"name": "Foto"}
+        },
+        "number": {
+            "calibrate_sand": {"name": "Calibración de arena"},
+            "cat_profile_weight": {"name": "Peso"}
+        },
+        "sensor": {
+            "cat_last_visit": {"name": "Última visita"},
+            "cat_time_in_box_today": {"name": "Tiempo en el arenero hoy"},
+            "cat_visits_today": {"name": "Visitas hoy"},
+            "cat_weight": {"name": "Peso medido"},
+            "last_visit": {"name": "Última visita"},
+            "sand_percent": {"name": "Nivel de arena"},
+            "operating_state": {
+                "name": "Estado",
+                "state": {
+                    "idle": "En reposo",
+                    "cleaning": "Limpiando",
+                    "restoring": "Restaurando",
+                    "leveling": "Nivelando",
+                    "cat_appears": "Gato detectado"
+                }
+            },
+            "visits_today": {"name": "Visitas hoy"}
+        },
+        "switch": {
+            "auto_clean": {"name": "Limpieza automática"},
+            "auto_level": {"name": "Nivelado automático"},
+            "child_lock": {"name": "Bloqueo infantil"},
+            "silent_mode": {"name": "Modo silencioso"}
+        }
+    },
+    "services": {
+        "set_cat_weight": {
+            "name": "Establecer peso del gato",
+            "description": "Guarda el peso en el perfil del gato en la nube de Neakasa, lo cual permite al arenero distinguir entre gatos. Los demás campos del perfil se mantienen y las visitas pasadas no se reasignan.",
+            "fields": {
+                "device_id": {
+                    "name": "Gato",
+                    "description": "El dispositivo de gato cuyo perfil recibirá el peso."
+                },
+                "weight": {
+                    "name": "Peso",
+                    "description": "El peso a guardar, en la unidad seleccionada abajo."
+                },
+                "unit": {
+                    "name": "Unidad",
+                    "description": "La unidad en la que se expresa el peso."
+                }
+            }
+        }
+    },
+    "exceptions": {
+        "not_a_cat": {
+            "message": "{device_name} no es un gato registrado en la nube de Neakasa."
+        },
+        "set_cat_weight_failed": {
+            "message": "Error al guardar el peso de {cat_name}: {error}"
+        }
+    }
+}
