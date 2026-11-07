@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.7.0...v1.8.0) (2026-11-07)
+
+### New features
+
+- The integration now includes a Spanish translation for setup, reauthentication, options, entity names and states, and action messages. ([#126](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/126))
+
 ## [1.7.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.6.0...v1.7.0) (2026-11-05)
 
 Cat profile weights can now be saved from Home Assistant, and cats deleted in the Neakasa app are removed automatically.
