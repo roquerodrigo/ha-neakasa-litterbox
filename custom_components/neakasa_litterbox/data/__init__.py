@@ -12,6 +12,7 @@ from .payload import (
     NeakasaPayload,
 )
 from .runtime import NeakasaConfigEntry, NeakasaData
+from .session import NeakasaStoredSession
 
 __all__ = [
     "JsonObject",
@@ -29,4 +30,5 @@ __all__ = [
     "NeakasaDiagnosticsPayload",
     "NeakasaOptionsData",
     "NeakasaPayload",
+    "NeakasaStoredSession",
 ]

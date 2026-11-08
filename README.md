@@ -132,7 +132,7 @@ Devices the cloud still reports are protected: deleting one would drop its entit
 
 If the credentials become invalid later, Home Assistant raises the standard reauth dialog. To change the region or rotate the password without removing the entry, use the integration's three-dot menu → **Reconfigure**.
 
-The cloud allows one session per account and drops the previous one whenever the account signs in somewhere else — opening the Neakasa app on your phone does exactly that. The integration signs in again with the stored credentials and carries on; only a credential the cloud rejects reaches the reauth dialog.
+The cloud allows one session per account and drops the previous one whenever the account signs in somewhere else — opening the Neakasa app on your phone does exactly that. The integration signs in again with the stored credentials and carries on; only a credential the cloud rejects reaches the reauth dialog. The session is kept across restarts, so Home Assistant starts the integration without signing in again while the cloud still accepts it.
 
 ## Options
 

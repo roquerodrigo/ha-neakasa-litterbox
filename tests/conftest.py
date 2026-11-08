@@ -12,9 +12,11 @@ from neakasa_litterbox_sdk import (
     Device,
     DeviceRole,
     DeviceStatus,
+    LoginResult,
     OperatingState,
     RecordType,
     ToiletRecord,
+    UserInfo,
 )
 
 if TYPE_CHECKING:
@@ -94,6 +96,25 @@ def sample_record() -> ToiletRecord:
         weight=4.1,
         unit="kg",
         way=0,
+    )
+
+
+@pytest.fixture
+def sample_session() -> LoginResult:
+    return LoginResult(
+        user_id="1001",
+        user_token="user-token",
+        aes_key="aes-key",
+        aes_iv="aes-iv",
+        user_info=UserInfo(
+            user_id=1001,
+            user_name="user@example.com",
+            ali_user_id=1001,
+            ali_authentication_token="ali-token",
+        ),
+        issued_at=1_700_000_000.0,
+        iot_token="iot-token",
+        iot_host="us-east-1.api-iot.aliyuncs.com",
     )
 
 
