@@ -15,7 +15,7 @@ package = false
 [dependency-groups]
 dev = [
     "homeassistant==2026.10.4",
-    "neakasa-litterbox-sdk==0.2.3",
+    "neakasa-litterbox-sdk==0.2.4",
     "pre-commit==4.7.0",
     "pytest-homeassistant-custom-component==0.13.375",
 ]
