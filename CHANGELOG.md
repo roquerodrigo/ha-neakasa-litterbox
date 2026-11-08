@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.0...v1.8.1) (2026-11-08)
+
+Setup is faster because the cloud session is kept across restarts, and the Neakasa cloud SDK is updated to 0.2.4.
+
+### Improvements
+
+- Updates the Neakasa cloud SDK to 0.2.4, which renews an expired cloud session faster. ([#130](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/130))
+- The cloud session is kept across restarts, so the integration no longer signs in again at every start while the cloud accepts it. ([#128](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/128))
+- Setup finishes faster, because the live push connection now opens in the background instead of delaying the entities. ([#128](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/128))
+
 ## [1.8.0](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.7.0...v1.8.0) (2026-11-07)
 
 ### New features
