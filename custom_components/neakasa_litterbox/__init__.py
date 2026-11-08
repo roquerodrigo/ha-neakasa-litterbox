@@ -23,6 +23,7 @@ from .exceptions import (
 )
 from .push import NeakasaPushClient
 from .services import async_setup_services
+from .session_store import NeakasaSessionStore
 from .stale_cat_devices import async_remove_stale_cat_devices
 
 if TYPE_CHECKING:
@@ -57,18 +58,26 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the Neakasa Litterbox integration from a config entry."""
     config = cast("NeakasaConfigData", entry.data)
+    session_store = NeakasaSessionStore(
+        hass,
+        entry.entry_id,
+        username=config["username"],
+        region=config["region"],
+    )
     client = NeakasaApiClient(
         username=config["username"],
         password=config["password"],
         region=config["region"],
+        session_listener=session_store.async_schedule_save,
     )
     # Registered before any await so the SDK session is closed even when
     # setup fails later (Home Assistant runs the on_unload callbacks on a
     # failed setup too); otherwise every ConfigEntryNotReady retry would
     # leak one aiohttp session.
     entry.async_on_unload(client.async_close)
+    entry.async_on_unload(session_store.async_save)
     try:
-        await client.async_login()
+        await client.async_login(cached=await session_store.async_load())
     except NeakasaApiClientAuthenticationError as exc:
         raise ConfigEntryAuthFailed(str(exc)) from exc
     except NeakasaApiClientError as exc:
@@ -101,7 +110,7 @@ async def async_setup_entry(
     )
 
     await coordinator.async_config_entry_first_refresh()
-    await push.async_start()
+    push.async_start()
     entry.async_on_unload(push.async_stop)
     entry.async_on_unload(activity_record_tracker.async_save)
 
@@ -131,7 +140,14 @@ async def async_remove_entry(
     entry: NeakasaConfigEntry,
 ) -> None:
     """Delete what the integration stored for an entry being removed."""
+    config = cast("NeakasaConfigData", entry.data)
     await NeakasaActivityRecordTracker(hass, entry.entry_id).async_remove()
+    await NeakasaSessionStore(
+        hass,
+        entry.entry_id,
+        username=config["username"],
+        region=config["region"],
+    ).async_remove()
 
 
 async def async_remove_config_entry_device(

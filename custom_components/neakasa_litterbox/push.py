@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import dataclasses
 from typing import TYPE_CHECKING
 
+from homeassistant.core import callback
 from neakasa_litterbox_sdk import DeviceStatus
 
 from .const import LOGGER
@@ -59,16 +61,19 @@ class NeakasaPushClient:
         self._supervisor: asyncio.Task[None] | None = None
         self._stopping: bool = False
 
-    async def async_start(self) -> None:
-        """Open the MQTT stream and start the reconnect supervisor."""
+    @callback
+    def async_start(self) -> None:
+        """
+        Start the supervisor, which opens the MQTT stream in the background.
+
+        Opening the stream takes over a second, and nothing in the setup
+        needs it: the coordinator already holds the first refresh, and pushes
+        only overlay it. The supervisor runs as an entry background task so
+        Home Assistant cancels it with the entry.
+        """
         if self._supervisor is not None:
             return
         self._stopping = False
-        # First attempt happens inline so a setup-time failure surfaces
-        # before we hand off to the background supervisor. The supervisor
-        # runs as an entry background task so Home Assistant cancels it
-        # with the entry instead of leaving an orphaned asyncio task.
-        await self._connect_once()
         self._supervisor = self._entry.async_create_background_task(
             self._hass,
             self._supervise(),
@@ -81,6 +86,8 @@ class NeakasaPushClient:
         supervisor, self._supervisor = self._supervisor, None
         if supervisor is not None:
             supervisor.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await supervisor
         await self._close_stream()
 
     async def _connect_once(self) -> bool:
@@ -91,6 +98,11 @@ class NeakasaPushClient:
         stream.on_change(self._handle_change)
         try:
             await stream.start()
+        except asyncio.CancelledError:
+            # A stop can land after the connection opened but before this
+            # task resumed; without this the session would outlive the entry.
+            await stream.stop()
+            raise
         except Exception:  # noqa: BLE001 - any push start failure degrades to polling-only
             LOGGER.warning(
                 "Push stream failed to start; integration will rely on polling",
@@ -102,19 +114,22 @@ class NeakasaPushClient:
         return True
 
     async def _supervise(self) -> None:
-        """Reconnect with exponential backoff whenever the stream dies."""
+        """Open the stream, then reopen it with exponential backoff whenever it dies."""
         backoff = _INITIAL_BACKOFF_SECONDS
         loop = asyncio.get_running_loop()
+        missed_updates = False
         while not self._stopping:
             if self._stream is None:
                 if not await self._connect_once():
+                    missed_updates = True
                     await asyncio.sleep(backoff)
                     backoff = min(backoff * 2, _MAX_BACKOFF_SECONDS)
                     continue
-                # Catch up on anything missed during the outage.
-                self._hass.async_create_task(
-                    self._coordinator.async_request_refresh(),
-                )
+                if missed_updates:
+                    self._hass.async_create_task(
+                        self._coordinator.async_request_refresh(),
+                    )
+            missed_updates = True
             connected_at = loop.time()
             await self._wait_for_stream_death()
             if self._stopping:

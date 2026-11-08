@@ -35,12 +35,13 @@ _DEVICE_BUSY_CODE = 29003
 _LITTER_BOX_CATEGORY_KEY = "CatLitter"
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from neakasa_litterbox_sdk import (
         Cat,
         Device,
         DeviceStatus,
+        LoginResult,
         StatusStream,
         ToiletRecord,
     )
@@ -74,8 +75,14 @@ class NeakasaApiClient:
         password: str,
         region: str,
         timeout: float = 10.0,
+        session_listener: Callable[[LoginResult | None], None] | None = None,
     ) -> None:
-        """Build a client bound to ``region`` (US/EU/AP)."""
+        """
+        Build a client bound to ``region`` (US/EU/AP).
+
+        ``session_listener`` receives the session after every call, because
+        the SDK replaces it on its own whenever the cloud rejects a token.
+        """
         try:
             sdk_region = Region[region.upper()]
         except KeyError as exc:
@@ -87,16 +94,27 @@ class NeakasaApiClient:
             region=sdk_region,
             timeout=timeout,
         )
+        self._session_listener = session_listener
 
     @property
     def sdk(self) -> NeakasaClient:
         """Expose the underlying SDK client (read-only)."""
         return self._client
 
-    async def async_login(self) -> None:
-        """Establish a session against the Neakasa cloud."""
-        with _translate_errors():
-            await self._client.login()
+    async def async_login(self, cached: LoginResult | None = None) -> None:
+        """Resume the ``cached`` session, or sign in afresh without one."""
+        with self._calling_cloud():
+            await self._client.login(cached=cached)
+
+    @contextmanager
+    def _calling_cloud(self) -> Iterator[None]:
+        """Translate SDK errors and report the session the call left behind."""
+        try:
+            with _translate_errors():
+                yield
+        finally:
+            if self._session_listener is not None:
+                self._session_listener(self._client.login_result)
 
     async def async_close(self) -> None:
         """Tear down the underlying session, swallowing SDK errors."""
@@ -105,7 +123,7 @@ class NeakasaApiClient:
 
     async def async_list_devices(self) -> list[Device]:
         """Return every litter box bound to the authenticated account."""
-        with _translate_errors():
+        with self._calling_cloud():
             devices = await self._client.list_devices()
         return [
             device
@@ -115,12 +133,12 @@ class NeakasaApiClient:
 
     async def async_get_status(self, device_name: str) -> DeviceStatus:
         """Return the live status snapshot for a device."""
-        with _translate_errors():
+        with self._calling_cloud():
             return await self._client.get_status(device_name)
 
     async def async_list_cats(self, device_name: str) -> list[Cat]:
         """Return the cat profiles attached to a device."""
-        with _translate_errors():
+        with self._calling_cloud():
             return await self._client.list_cats(device_name)
 
     async def async_set_cat_weight(
@@ -133,7 +151,7 @@ class NeakasaApiClient:
         zone_seconds: int,
     ) -> None:
         """Save ``weight`` to a cat's profile, leaving its other fields intact."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.set_cat_weight(
                 device_name,
                 cat_id,
@@ -149,54 +167,54 @@ class NeakasaApiClient:
         end_time: int,
     ) -> list[ToiletRecord]:
         """Return raw toilet records in the given epoch-seconds window."""
-        with _translate_errors():
+        with self._calling_cloud():
             return await self._client.get_toilet_records(
                 device_name, start_time, end_time
             )
 
     async def async_start_clean(self, device_name: str) -> None:
         """Trigger a manual clean cycle."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.start_clean(device_name)
 
     async def async_stop_clean(self, device_name: str) -> None:
         """Abort a running clean cycle."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.stop_clean(device_name)
 
     async def async_start_level(self, device_name: str) -> None:
         """Trigger a manual sand-level operation."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.start_level(device_name)
 
     async def async_stop_level(self, device_name: str) -> None:
         """Abort a running sand-level operation."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.stop_level(device_name)
 
     async def async_calibrate_sand(self, device_name: str, percent: int) -> None:
         """Calibrate the sand sensor to ``percent`` (0-100)."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.calibrate_sand(device_name, percent)
 
     async def async_set_auto_clean(self, device_name: str, *, enabled: bool) -> None:
         """Enable or disable automatic cleaning."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.set_auto_clean(device_name, enabled)
 
     async def async_set_auto_level(self, device_name: str, *, enabled: bool) -> None:
         """Enable or disable automatic levelling."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.set_auto_level(device_name, enabled)
 
     async def async_set_silent_mode(self, device_name: str, *, enabled: bool) -> None:
         """Enable or disable silent mode."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.set_silent_mode(device_name, enabled)
 
     async def async_set_child_lock(self, device_name: str, *, enabled: bool) -> None:
         """Enable or disable the child lock."""
-        with _translate_errors():
+        with self._calling_cloud():
             await self._client.set_child_lock(device_name, enabled)
 
     def watch_status(self) -> StatusStream:

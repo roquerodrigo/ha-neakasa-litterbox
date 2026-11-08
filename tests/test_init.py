@@ -368,3 +368,86 @@ async def test_unload_entry_closes_client(hass, setup_integration):
     assert await hass.config_entries.async_unload(setup_integration.entry_id)
     await hass.async_block_till_done()
     client.async_close.assert_awaited_once()
+
+
+def _stored_session(hass_storage, entry_id, session, username="u@x"):
+    key = f"{DOMAIN}.{entry_id}.session"
+    hass_storage[key] = {
+        "version": 1,
+        "minor_version": 1,
+        "key": key,
+        "data": {"username": username, "region": "us", "login": session.to_dict()},
+    }
+
+
+async def test_setup_resumes_the_stored_session(
+    hass, hass_storage, mock_api_client, enable_custom_integrations, sample_session
+):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="resume",
+        data={"username": "u@x", "password": "p", "region": "us"},
+        unique_id="ux",
+    )
+    entry.add_to_hass(hass)
+    _stored_session(hass_storage, entry.entry_id, sample_session)
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert entry.state == ConfigEntryState.LOADED
+    mock_api_client.async_login.assert_awaited_once_with(cached=sample_session)
+
+
+async def test_setup_signs_in_afresh_with_session_of_another_account(
+    hass, hass_storage, mock_api_client, enable_custom_integrations, sample_session
+):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="other",
+        data={"username": "u@x", "password": "p", "region": "us"},
+        unique_id="ux",
+    )
+    entry.add_to_hass(hass)
+    _stored_session(hass_storage, entry.entry_id, sample_session, username="previous@x")
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    mock_api_client.async_login.assert_awaited_once_with(cached=None)
+
+
+async def test_session_reported_by_the_client_is_kept_for_the_next_setup(
+    hass, hass_storage, setup_integration, sample_session
+):
+    with patch("custom_components.neakasa_litterbox.NeakasaApiClient") as mock_class:
+        mock_class.return_value = setup_integration.runtime_data.client
+        await hass.config_entries.async_reload(setup_integration.entry_id)
+        await hass.async_block_till_done()
+        session_listener = mock_class.call_args.kwargs["session_listener"]
+
+    session_listener(sample_session)
+    assert await hass.config_entries.async_unload(setup_integration.entry_id)
+
+    stored = hass_storage[f"{DOMAIN}.{setup_integration.entry_id}.session"]
+    assert stored["data"]["login"] == sample_session.to_dict()
+
+
+async def test_removing_the_entry_deletes_the_session_file(
+    hass, hass_storage, mock_api_client, enable_custom_integrations, sample_session
+):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="removed",
+        data={"username": "u@x", "password": "p", "region": "us"},
+        unique_id="ux",
+    )
+    entry.add_to_hass(hass)
+    _stored_session(hass_storage, entry.entry_id, sample_session)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert f"{DOMAIN}.{entry.entry_id}.session" not in hass_storage

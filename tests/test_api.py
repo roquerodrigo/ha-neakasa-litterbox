@@ -22,12 +22,17 @@ from custom_components.neakasa_litterbox.exceptions import (
 )
 
 
-def _client(sdk_mock=None) -> NeakasaApiClient:
+def _client(sdk_mock=None, session_listener=None) -> NeakasaApiClient:
     with patch(
         "custom_components.neakasa_litterbox.api.NeakasaClient",
         return_value=sdk_mock or MagicMock(),
     ):
-        return NeakasaApiClient(username="u@x", password="p", region="us")
+        return NeakasaApiClient(
+            username="u@x",
+            password="p",
+            region="us",
+            session_listener=session_listener,
+        )
 
 
 def test_translate_invalid_credentials_to_auth_error():
@@ -111,6 +116,39 @@ async def test_async_login_calls_sdk():
     client = _client(sdk)
     await client.async_login()
     sdk.login.assert_awaited_once()
+
+
+async def test_async_login_signs_in_afresh_without_cached_session():
+    sdk = MagicMock()
+    sdk.login = AsyncMock()
+    await _client(sdk).async_login()
+    sdk.login.assert_awaited_once_with(cached=None)
+
+
+async def test_async_login_resumes_cached_session(sample_session):
+    sdk = MagicMock()
+    sdk.login = AsyncMock()
+    await _client(sdk).async_login(cached=sample_session)
+    sdk.login.assert_awaited_once_with(cached=sample_session)
+
+
+async def test_calls_report_the_session_they_leave_behind(sample_session):
+    sdk = MagicMock()
+    sdk.list_devices = AsyncMock(return_value=[])
+    sdk.login_result = sample_session
+    listener = MagicMock()
+    await _client(sdk, session_listener=listener).async_list_devices()
+    listener.assert_called_once_with(sample_session)
+
+
+async def test_failed_calls_still_report_the_session(sample_session):
+    sdk = MagicMock()
+    sdk.list_devices = AsyncMock(side_effect=TransportError("down"))
+    sdk.login_result = sample_session
+    listener = MagicMock()
+    with pytest.raises(NeakasaApiClientCommunicationError):
+        await _client(sdk, session_listener=listener).async_list_devices()
+    listener.assert_called_once_with(sample_session)
 
 
 async def test_async_login_translates_auth_error():
