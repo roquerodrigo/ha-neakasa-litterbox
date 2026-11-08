@@ -1133,7 +1133,7 @@ lint = [
 [package.metadata.requires-dev]
 dev = [
     { name = "homeassistant", specifier = "==2026.10.4" },
-    { name = "neakasa-litterbox-sdk", specifier = "==0.2.3" },
+    { name = "neakasa-litterbox-sdk", specifier = "==0.2.4" },
     { name = "pre-commit", specifier = "==4.7.0" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.375" },
 ]
@@ -1817,16 +1817,16 @@ wheels = [
 
 [[package]]
 name = "neakasa-litterbox-sdk"
-version = "0.2.3"
+version = "0.2.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "aiomqtt" },
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ed/84/b040eeca1b2903f9136e41b9e8aef2555c6d5849e057592b743765684574/neakasa_litterbox_sdk-0.2.3.tar.gz", hash = "sha256:da7c2e5c285244ef7c45df82e63f03bfaf48dc4aaab9f79b4e881f04e64d9571", size = 143344, upload-time = "2026-10-30T00:48:26.002Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/3d/53ab3ba8fadf48785ef59714058c3c4462af3546a456f734a68cf16e47a6/neakasa_litterbox_sdk-0.2.4.tar.gz", hash = "sha256:7bb8b968a6b63a33eab9f002e45bc88a7190ac4477a1e27574023b8f9f5f0d6b", size = 144854, upload-time = "2026-11-08T21:42:25.024Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/21/03428375f35195e168fc831f661d423ec3f37199ba1a9f90d2e5ce9eba2c/neakasa_litterbox_sdk-0.2.3-py3-none-any.whl", hash = "sha256:d404c36c13881265b7a0437822ba1016a1fd3781030bbc8a9e447f63cc1c56f9", size = 66891, upload-time = "2026-10-30T00:48:25.008Z" },
+    { url = "https://files.pythonhosted.org/packages/af/8f/e1f9309b85f25a113e50ca0fd58ff612e99b223151f68c34c830674a6f6b/neakasa_litterbox_sdk-0.2.4-py3-none-any.whl", hash = "sha256:4c9c1b773f4ff93db9829123b5c45ebb9b96985c9c37edd295b206f563e7a5da", size = 67829, upload-time = "2026-11-08T21:42:23.84Z" },
 ]
 
 [[package]]
