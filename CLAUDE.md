@@ -50,6 +50,7 @@ Past bumps landed as a single `fix(deps)` commit touching both files plus `uv.lo
 The integration only imports from the SDK's public surface, so an SDK release is safe as long as it doesn't rename/remove these:
 
 - `api.py` — `NeakasaClient` (wrapped by `NeakasaApiClient`) and its `watch_status()` method, which returns the `StatusStream` used by `push.py`; `Region` (looked up by name from the configured region).
+- `api.py` / `session_store.py` — `LoginResult`, `NeakasaClient.login(cached=...)` and `NeakasaClient.login_result` (the persisted session; see Session store below).
 - `push.py` — `StatusStream`, `StatusUpdate`, `DeviceStatus`.
 - `coordinator.py` — `Cat`, `Device`, `DeviceStatus`, `ToiletRecord`, `RecordType`.
 - `sensor/operating_state.py` — `OperatingState` (the enum sensor's options are built from its lowercased member names).
