@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -135,6 +136,7 @@ def mock_api_client(
     stream = MagicMock()
     stream.start = AsyncMock()
     stream.stop = AsyncMock()
+    stream.run_forever = AsyncMock(side_effect=asyncio.Event().wait)
 
     with (
         patch(

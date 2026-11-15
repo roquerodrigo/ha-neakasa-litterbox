@@ -4,7 +4,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from neakasa_litterbox_sdk import NeakasaError, StatusUpdate
+from neakasa_litterbox_sdk import NeakasaError, StatusUpdate, TransportError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.neakasa_litterbox.const import DOMAIN
@@ -43,6 +43,7 @@ async def push_setup(hass, sample_device, sample_status, sample_cat):
     stream = MagicMock()
     stream.start = AsyncMock()
     stream.stop = AsyncMock()
+    stream.run_forever = AsyncMock(side_effect=_block_forever)
     api = MagicMock()
     api.watch_status = MagicMock(return_value=stream)
     entry = MockConfigEntry(domain=DOMAIN)
@@ -51,6 +52,18 @@ async def push_setup(hass, sample_device, sample_status, sample_cat):
     yield push, api, stream, coordinator, snap, entry
     # Cancel the reconnect supervisor so it doesn't outlive the test.
     await push.async_stop()
+
+
+async def _block_forever() -> None:
+    await asyncio.Event().wait()
+
+
+def _push_tasks() -> list[asyncio.Task]:
+    return [
+        task
+        for task in asyncio.all_tasks()
+        if task.get_name().startswith("neakasa_litterbox.push_") and not task.done()
+    ]
 
 
 async def _settle(hass):
@@ -212,3 +225,91 @@ async def test_handle_change_ignored_with_no_known_keys(push_setup):
         ),
     )
     coordinator.async_set_updated_data.assert_not_called()
+
+
+async def test_sdk_giving_up_restarts_stream(hass, push_setup, caplog):
+    push, api, stream, coordinator, *_ = push_setup
+    gave_up = False
+
+    async def run_forever() -> None:
+        nonlocal gave_up
+        if not gave_up:
+            gave_up = True
+            msg = "Failed to reconnect the status stream after 5 attempts"
+            raise TransportError(msg)
+        await _block_forever()
+
+    stream.run_forever = AsyncMock(side_effect=run_forever)
+    # The SDK drops its transport before giving up, so only run_forever
+    # can report this death.
+    stream._transport = None
+    with patch("custom_components.neakasa_litterbox.push._INITIAL_BACKOFF_SECONDS", 0):
+        await _start(hass, push)
+    assert api.watch_status.call_count == 2
+    stream.stop.assert_awaited_once()
+    assert push._stream is stream
+    coordinator.async_request_refresh.assert_awaited_once()
+    assert "Push stream lost" in caplog.text
+    assert "stream gave up: Failed to reconnect" in caplog.text
+
+
+async def test_stream_ending_restarts_stream(hass, push_setup, caplog):
+    push, api, stream, *_ = push_setup
+    ended = False
+
+    async def run_forever() -> None:
+        nonlocal ended
+        if not ended:
+            ended = True
+            return
+        await _block_forever()
+
+    stream.run_forever = AsyncMock(side_effect=run_forever)
+    with patch("custom_components.neakasa_litterbox.push._INITIAL_BACKOFF_SECONDS", 0):
+        await _start(hass, push)
+    assert api.watch_status.call_count == 2
+    assert "(stream ended)" in caplog.text
+
+
+async def test_dead_dispatch_task_restarts_stream(hass, push_setup, caplog):
+    push, api, stream, *_ = push_setup
+    dispatch_task = asyncio.create_task(asyncio.sleep(0))
+    await dispatch_task
+    stream._transport._dispatch_task = dispatch_task
+    healthy = MagicMock()
+    healthy.start = AsyncMock()
+    healthy.stop = AsyncMock()
+    healthy.run_forever = AsyncMock(side_effect=_block_forever)
+    api.watch_status = MagicMock(side_effect=[stream, healthy])
+    with patch("custom_components.neakasa_litterbox.push._INITIAL_BACKOFF_SECONDS", 0):
+        await _start(hass, push)
+    assert api.watch_status.call_count == 2
+    stream.stop.assert_awaited_once()
+    assert push._stream is healthy
+    assert "(MQTT dispatcher stopped)" in caplog.text
+
+
+async def test_sdk_reconnect_is_not_a_death(hass, push_setup):
+    # While the SDK retries a dropped connection it holds no transport
+    # and run_forever keeps waiting: the stream is still alive.
+    push, api, stream, *_ = push_setup
+    stream._transport = None
+    with patch(
+        "custom_components.neakasa_litterbox.push._HEALTH_CHECK_INTERVAL_SECONDS",
+        0,
+    ):
+        await _start(hass, push)
+        await _settle(hass)
+    api.watch_status.assert_called_once_with()
+    stream.stop.assert_not_awaited()
+    assert push._stream is stream
+
+
+async def test_stop_leaves_no_watcher_tasks(hass, push_setup):
+    push, _, stream, *_ = push_setup
+    await _start(hass, push)
+    stream.run_forever.assert_awaited_once()
+    assert _push_tasks()
+    await push.async_stop()
+    assert _push_tasks() == []
+    stream.stop.assert_awaited_once()

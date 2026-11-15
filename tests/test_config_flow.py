@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -29,6 +30,7 @@ def _patch_both_clients():
     stream = MagicMock()
     stream.start = AsyncMock()
     stream.stop = AsyncMock()
+    stream.run_forever = AsyncMock(side_effect=asyncio.Event().wait)
     with (
         patch(
             "custom_components.neakasa_litterbox.config_flow.NeakasaApiClient"
