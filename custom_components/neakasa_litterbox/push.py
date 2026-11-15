@@ -28,7 +28,7 @@ _STATUS_FIELDS: frozenset[str] = frozenset(
 
 _INITIAL_BACKOFF_SECONDS = 5.0
 _MAX_BACKOFF_SECONDS = 300.0
-# How often the supervisor polls the SDK's dispatch task for liveness.
+# How often the supervisor polls the transport's dispatch task for liveness.
 _HEALTH_CHECK_INTERVAL_SECONDS = 15.0
 # A connection that survives this long resets the reconnect backoff.
 _STABLE_UPTIME_SECONDS = 60.0
@@ -39,10 +39,10 @@ class NeakasaPushClient:
     Bridges the SDK :class:`StatusStream` into the HA coordinator.
 
     Maintains a single live stream and respawns it with exponential
-    backoff when the underlying MQTT dispatcher dies — the SDK doesn't
-    surface disconnects on its public API, so the supervisor watches the
-    transport's dispatch task to detect them and triggers a coordinator
-    refresh after each recovery.
+    backoff when it dies, then triggers a coordinator refresh after each
+    recovery. The SDK retries a dropped connection on its own and only
+    reports the failure once ``run_forever`` raises; the supervisor waits
+    on that and, as a fallback, on the transport's dispatch task.
     """
 
     def __init__(
@@ -131,7 +131,7 @@ class NeakasaPushClient:
                     )
             missed_updates = True
             connected_at = loop.time()
-            await self._wait_for_stream_death()
+            cause = await self._wait_for_stream_death()
             if self._stopping:
                 return  # type: ignore[unreachable]
             await self._close_stream()
@@ -140,23 +140,48 @@ class NeakasaPushClient:
                 backoff = _INITIAL_BACKOFF_SECONDS
             else:
                 backoff = min(backoff * 2, _MAX_BACKOFF_SECONDS)
-            LOGGER.info(
-                "Push stream disconnected after %.0fs; reconnecting in %.0fs",
+            LOGGER.warning(
+                "Push stream lost after %.0fs (%s); reconnecting in %.0fs",
                 uptime,
+                cause,
                 backoff,
             )
             await asyncio.sleep(backoff)
 
-    async def _wait_for_stream_death(self) -> None:
-        """Block until the MQTT dispatcher task ends (or stop is requested)."""
-        while not self._stopping:
-            stream = self._stream
-            if stream is None:
-                return
-            dispatch_task = _dispatch_task(stream)
-            if isinstance(dispatch_task, asyncio.Task) and dispatch_task.done():
-                return
-            await asyncio.sleep(_HEALTH_CHECK_INTERVAL_SECONDS)
+    async def _wait_for_stream_death(self) -> str:
+        """
+        Block until the stream dies and return why.
+
+        The stream is dead once ``run_forever`` returns or raises, which
+        is how the SDK reports that its own reconnect attempts ran out,
+        or once the live transport's dispatch task ends. While the SDK
+        reconnects it holds no transport and ``run_forever`` keeps
+        waiting, so that window does not count as a death.
+        """
+        stream = self._stream
+        if stream is None:
+            return "stream closed"
+        run_forever = asyncio.create_task(
+            stream.run_forever(),
+            name="neakasa_litterbox.push_run_forever",
+        )
+        dispatcher = asyncio.create_task(
+            _wait_for_dispatcher_exit(stream),
+            name="neakasa_litterbox.push_dispatch_watch",
+        )
+        watchers = (run_forever, dispatcher)
+        try:
+            await asyncio.wait(watchers, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for watcher in watchers:
+                watcher.cancel()
+            await asyncio.gather(*watchers, return_exceptions=True)
+        if not run_forever.cancelled():
+            error = run_forever.exception()
+            if error is not None:
+                return f"stream gave up: {error}"
+            return "stream ended"
+        return "MQTT dispatcher stopped"
 
     async def _close_stream(self) -> None:
         """Stop the active stream, swallowing teardown errors."""
@@ -205,14 +230,22 @@ class NeakasaPushClient:
         self._coordinator.async_set_updated_data(new_payload)
 
 
+async def _wait_for_dispatcher_exit(stream: StatusStream) -> None:
+    """Return once the stream's live transport has a finished dispatch task."""
+    while True:
+        dispatch_task = _dispatch_task(stream)
+        if isinstance(dispatch_task, asyncio.Task) and dispatch_task.done():
+            return
+        await asyncio.sleep(_HEALTH_CHECK_INTERVAL_SECONDS)
+
+
 def _dispatch_task(stream: StatusStream) -> object | None:
     """
     Return the SDK transport's dispatch task, or ``None`` if not exposed.
 
-    The SDK doesn't publish disconnect events; the supervisor inspects
-    this private task to drive reconnects. ``getattr`` guards against
-    the SDK reshaping internals — when that happens auto-reconnect
-    degrades to no-op rather than crashing.
+    A fallback next to ``run_forever``: ``getattr`` guards against the
+    SDK reshaping internals, in which case only ``run_forever`` reports
+    deaths. The transport is ``None`` while the SDK reconnects.
     """
     transport = getattr(stream, "_transport", None)
     if transport is None:
