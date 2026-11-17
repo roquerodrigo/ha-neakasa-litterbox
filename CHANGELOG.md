@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.1...v1.8.2) (2026-11-17)
+
+### Improvements
+
+- A lost push connection is now logged as a warning that includes the cause, instead of an info message. ([#135](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/135))
+
+### Bug fixes
+
+- Status updates now resume on their own after a long connection outage; previously the integration fell back to polling only, with no log message, until the entry was reloaded. ([#135](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/135))
+
 ## [1.8.1](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.0...v1.8.1) (2026-11-08)
 
 Setup is faster because the cloud session is kept across restarts, and the Neakasa cloud SDK is updated to 0.2.4.
