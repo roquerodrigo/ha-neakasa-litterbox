@@ -122,26 +122,55 @@ async def test_update_data_busy_without_prior_data_raises(hass, sample_device):
         await coord._async_update_data()
 
 
-async def test_update_data_raises_auth_failed_on_auth_error(hass):
+async def test_update_data_signs_in_again_on_unknown_auth_code(
+    hass, sample_device, sample_status, sample_cat, sample_record
+):
     client = MagicMock()
-    client.async_list_devices = AsyncMock(
-        side_effect=NeakasaApiClientAuthenticationError("nope")
+    client.async_list_devices = AsyncMock(return_value=[sample_device])
+    client.async_login = AsyncMock()
+    client.async_get_status = AsyncMock(return_value=sample_status)
+    client.async_list_cats = AsyncMock(return_value=[sample_cat])
+    client.async_get_toilet_records = AsyncMock(
+        side_effect=[
+            NeakasaApiClientAuthenticationError(
+                "Failed to get toilet records: server returned code 1001"
+            ),
+            [sample_record],
+        ]
     )
     coord = _make_coordinator(hass, client)
-    with pytest.raises(ConfigEntryAuthFailed):
-        await coord._async_update_data()
+
+    payload = await coord._async_update_data()
+
+    client.async_login.assert_awaited_once()
+    assert sample_device.iot_id in payload.devices
 
 
-async def test_update_data_never_signs_in_again_on_bad_credentials(hass):
+async def test_update_data_fails_without_reauth_when_rejection_outlives_sign_in(
+    hass,
+):
     client = MagicMock()
     client.async_list_devices = AsyncMock(
-        side_effect=NeakasaApiClientAuthenticationError("nope")
+        side_effect=NeakasaApiClientAuthenticationError("server returned code 1001")
     )
     client.async_login = AsyncMock()
     coord = _make_coordinator(hass, client)
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
+    client.async_login.assert_awaited_once()
+
+
+async def test_update_data_raises_auth_failed_when_sign_in_is_refused(hass):
+    client = MagicMock()
+    client.async_list_devices = AsyncMock(
+        side_effect=NeakasaApiClientAuthenticationError("nope")
+    )
+    client.async_login = AsyncMock(
+        side_effect=NeakasaApiClientAuthenticationError("wrong password")
+    )
+    coord = _make_coordinator(hass, client)
     with pytest.raises(ConfigEntryAuthFailed):
         await coord._async_update_data()
-    client.async_login.assert_not_awaited()
 
 
 async def test_update_data_signs_in_again_on_expired_session(
@@ -170,7 +199,7 @@ async def test_update_data_gives_up_when_session_expires_twice(hass):
     )
     client.async_login = AsyncMock()
     coord = _make_coordinator(hass, client)
-    with pytest.raises(ConfigEntryAuthFailed):
+    with pytest.raises(UpdateFailed):
         await coord._async_update_data()
     client.async_login.assert_awaited_once()
 

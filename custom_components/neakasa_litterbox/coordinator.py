@@ -30,7 +30,6 @@ from .exceptions import (
     NeakasaApiClientCommunicationError,
     NeakasaApiClientDeviceBusyError,
     NeakasaApiClientError,
-    NeakasaApiClientSessionExpiredError,
 )
 
 if TYPE_CHECKING:
@@ -85,10 +84,13 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
         Transient transport errors (DNS hiccups, TLS handshake retries
         against the cloud) get one or two short retries instead of
         immediately marking entities unavailable until the next 10-min
-        scan window. An expired session buys one silent sign-in: the
-        cloud drops it whenever the account signs in elsewhere (the
-        mobile app, another client) and the stored credentials are still
-        good, so a reauth flow would only ask for what we already have.
+        scan window. Any auth-shaped rejection buys one silent sign-in:
+        the cloud drops the session whenever the account signs in
+        elsewhere (the mobile app, another client), and it also answers
+        server-side failures such as code 1001 ("SystemError") with
+        codes the SDK cannot tell apart from auth errors. Only a refused
+        sign-in proves the stored credentials wrong and starts a reauth;
+        a rejection that outlives a successful sign-in is a cloud fault.
         """
         client = self.config_entry.runtime_data.client
         transport_failures = 0
@@ -99,15 +101,13 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
                 snapshots = await asyncio.gather(
                     *(self._fetch_device_snapshot(device) for device in devices),
                 )
-            except NeakasaApiClientSessionExpiredError as exc:
+            except NeakasaApiClientAuthenticationError as exc:
                 if signed_in_again:
-                    raise ConfigEntryAuthFailed(str(exc)) from exc
+                    raise UpdateFailed(str(exc)) from exc
                 signed_in_again = True
-                LOGGER.debug("Cloud session expired (%s); signing in again", exc)
+                LOGGER.debug("Cloud rejected the session (%s); signing in again", exc)
                 await self._async_sign_in_again()
                 continue
-            except NeakasaApiClientAuthenticationError as exc:
-                raise ConfigEntryAuthFailed(str(exc)) from exc
             except NeakasaApiClientDeviceBusyError as exc:
                 # Device is mid-cycle; the cloud refuses the readback. Keep
                 # the last snapshot available — MQTT pushes overlay the live
