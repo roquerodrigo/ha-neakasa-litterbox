@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.2...v1.8.3) (2026-11-19)
+
+### Bug fixes
+
+- A temporary Neakasa cloud server error no longer triggers a reauthentication prompt; entities now recover on their own, and a reauth starts only if signing in again with the stored credentials is refused. ([#140](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/140))
+
 ## [1.8.2](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.1...v1.8.2) (2026-11-17)
 
 ### Improvements
