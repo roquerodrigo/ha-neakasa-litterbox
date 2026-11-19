@@ -214,8 +214,10 @@ with a one-line comment explaining the deliberate narrowing — see
   - Communication errors → `raise UpdateFailed("Failed to …: %s" % err)`. Pass
     `retry_after=<seconds>` when the upstream signals an explicit backoff (e.g.
     HTTP 429 `Retry-After`).
-  - Authentication errors → `raise ConfigEntryAuthFailed(...)` — HA cancels
-    further updates and starts the `SOURCE_REAUTH` flow.
+  - Authentication errors → one silent sign-in with the stored credentials
+    first; `raise ConfigEntryAuthFailed(...)` only when that sign-in is
+    refused — HA starts the `SOURCE_REAUTH` flow. A rejection that persists
+    after a successful sign-in is a cloud fault → `UpdateFailed`.
   - Never let raw upstream exception strings reach `UpdateFailed` when they
     could carry tokens; convert to a sanitized message at the API client.
 
