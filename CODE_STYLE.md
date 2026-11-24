@@ -49,7 +49,7 @@ PR that satisfies (or removes) a rule.
   they live alongside related code (typically in the `data/` package) and
   don't need their own file.
 - **Helper functions** may live in the same file as the single class that uses
-  them (e.g. `_verify_response_or_raise` in `api.py`).
+  them (e.g. `_translate_errors` in `api.py`).
 - **`__init__.py` of the integration package** wires `async_setup` (service
   actions only, from `services.py`), `async_setup_entry`, `async_unload_entry`,
   `async_reload_entry` and the entry/device removal hooks, and nothing else.
@@ -196,7 +196,7 @@ with a one-line comment explaining the deliberate narrowing — see
 ## Coordinator and runtime data
 
 - All API state flows through `entry.runtime_data: NeakasaData`
-  (`data.py`). Never store integration state in `hass.data` — `runtime_data` is
+  (`data/runtime.py`). Never store integration state in `hass.data` — `runtime_data` is
   auto-discarded on unload, the legacy `hass.data[DOMAIN][entry_id]` pattern is
   not.
 - The coordinator is typed as `DataUpdateCoordinator[NeakasaPayload]`.
