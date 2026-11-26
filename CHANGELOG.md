@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.8.4](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.3...v1.8.4) (2026-11-26)
+
+### Bug fixes
+
+- Occasional cloud gateway timeouts are now retried before the update fails, so litter box entities no longer become unavailable until the next poll. ([#147](https://github.com/roquerodrigo/ha-neakasa-litterbox/pull/147))
+
 ## [1.8.3](https://github.com/roquerodrigo/ha-neakasa-litterbox/compare/v1.8.2...v1.8.3) (2026-11-19)
 
 ### Bug fixes
