@@ -30,6 +30,11 @@ from .exceptions import (
 # so it gets its own error type the coordinator can keep-last on.
 _DEVICE_BUSY_CODE = 29003
 
+# The cloud gateway answers with this code (gateway.hsf.invoke.timeout) when
+# its own backend does not respond in time. The same call normally succeeds
+# moments later, so it is retried like a network failure.
+_GATEWAY_TIMEOUT_CODE = 20056
+
 # The account listing also returns other Neakasa/Neabot products (e.g. robot
 # vacuums); the catbox endpoints reject them, so only this category is kept.
 _LITTER_BOX_CATEGORY_KEY = "CatLitter"
@@ -61,6 +66,8 @@ def _translate_errors() -> Iterator[None]:
     except ApiError as exc:
         if exc.code == _DEVICE_BUSY_CODE:
             raise NeakasaApiClientDeviceBusyError(str(exc)) from exc
+        if exc.code == _GATEWAY_TIMEOUT_CODE:
+            raise NeakasaApiClientCommunicationError(str(exc)) from exc
         raise NeakasaApiClientError(str(exc)) from exc
     except NeakasaError as exc:
         raise NeakasaApiClientError(str(exc)) from exc

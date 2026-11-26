@@ -54,7 +54,7 @@ The integration only imports from the SDK's public surface, so an SDK release is
 - `push.py` — `StatusStream`, `StatusUpdate`, `DeviceStatus`.
 - `coordinator.py` — `Cat`, `Device`, `DeviceStatus`, `ToiletRecord`, `RecordType`.
 - `sensor/operating_state.py` — `OperatingState` (the enum sensor's options are built from its lowercased member names).
-- `exceptions/` — `_translate_errors` in `api.py` catches the SDK's `NeakasaError`, `ApiError` (branching on its `.code`), `TransportError`, `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`. If the SDK adds/renames an exception class or changes an error code (e.g. the `29003` "device busy" code), update this mapping or the integration will surface the wrong HA exception (or none).
+- `exceptions/` — `_translate_errors` in `api.py` catches the SDK's `NeakasaError`, `ApiError` (branching on its `.code`), `TransportError`, `InvalidCredentialsError`, `SessionExpiredError`, `AuthenticationError`. If the SDK adds/renames an exception class or changes an error code (e.g. the `29003` "device busy" code, or the `20056` gateway timeout retried as a communication error), update this mapping or the integration will surface the wrong HA exception (or none).
 
 ## Architecture
 
