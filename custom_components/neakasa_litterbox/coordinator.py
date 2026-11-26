@@ -82,9 +82,9 @@ class NeakasaDataUpdateCoordinator(DataUpdateCoordinator[NeakasaPayload]):
         Fetch devices, status, cats and records in parallel per device.
 
         Transient transport errors (DNS hiccups, TLS handshake retries
-        against the cloud) get one or two short retries instead of
-        immediately marking entities unavailable until the next 10-min
-        scan window. Any auth-shaped rejection buys one silent sign-in:
+        against the cloud, gateway timeouts) get one or two short retries
+        instead of immediately marking entities unavailable until the next
+        10-min scan window. Any auth-shaped rejection buys one silent sign-in:
         the cloud drops the session whenever the account signs in
         elsewhere (the mobile app, another client), and it also answers
         server-side failures such as code 1001 ("SystemError") with

@@ -82,6 +82,18 @@ def test_translate_transport_to_communication_error():
         raise TransportError("network")
 
 
+def test_translate_gateway_timeout_to_communication_error():
+    with (
+        pytest.raises(NeakasaApiClientCommunicationError),
+        _translate_errors(),
+    ):
+        raise ApiError(
+            "Failed to get device status: server returned code 20056",
+            code=20056,
+            server_message="gateway.hsf.invoke.timeout",
+        )
+
+
 def test_translate_api_error_to_base_error():
     with pytest.raises(NeakasaApiClientError), _translate_errors():
         raise ApiError("api boom", code=500)
